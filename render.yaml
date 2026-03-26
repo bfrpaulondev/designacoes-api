@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: designacoes-api
+    env: node
+    buildCommand: yarn install
+    startCommand: npx tsx src/index.ts
+    envVars:
+      - key: NODE_ENV
+        value: production
