@@ -278,6 +278,78 @@ function mapearTipoDesignacao(tipo: string, categoria: string): string[] {
   return tipos
 }
 
+// Criar múltiplas designações (batch)
+router.post('/batch', async (req: Request, res: Response) => {
+  try {
+    const db = await getDb()
+    const { designacoes } = req.body
+
+    if (!designacoes || !Array.isArray(designacoes) || designacoes.length === 0) {
+      return res.status(400).json({ error: 'Lista de designações é obrigatória' })
+    }
+
+    const insertedDesignacoes = []
+
+    for (const data of designacoes) {
+      // Buscar nome do publicador
+      const publicador = await db.collection('publicadores').findOne({ id: data.publicadorId })
+      const publicadorNome = publicador?.nome || publicador?.nomeCompleto || data.publicadorNome || ''
+
+      const designacao = {
+        id: data.id || new ObjectId().toString(),
+        publicadorId: data.publicadorId,
+        publicadorNome,
+        tipo: data.tipo,
+        categoria: data.categoria,
+        data: data.data,
+        semanaId: data.semanaId || null,
+        status: data.status || 'pendente',
+        confirmadoEm: null,
+        confirmadoPor: null,
+        observacoes: data.observacoes || '',
+        
+        // Campos específicos
+        sala: data.sala || null,
+        ajudanteId: data.ajudanteId || null,
+        ajudanteNome: data.ajudanteNome || null,
+        discursoTema: data.discursoTema || null,
+        discursoNumero: data.discursoNumero || null,
+        oradorCongregacao: data.oradorCongregacao || null,
+        etiqueta: data.etiqueta || null,
+        grupoId: data.grupoId || null,
+        grupoNome: data.grupoNome || null,
+        horaInicio: data.horaInicio || null,
+        horaFim: data.horaFim || null,
+        local: data.local || null,
+        companheiroId: data.companheiroId || null,
+        companheiroNome: data.companheiroNome || null,
+        
+        criadoEm: new Date(),
+        atualizadoEm: new Date()
+      }
+
+      // Verificar se já existe designação para este tipo/data
+      const existente = await db.collection('designacoes').findOne({
+        tipo: designacao.tipo,
+        data: designacao.data
+      })
+
+      if (!existente) {
+        await db.collection('designacoes').insertOne(designacao)
+        insertedDesignacoes.push(designacao)
+      }
+    }
+
+    res.status(201).json({ 
+      message: `${insertedDesignacoes.length} designações criadas`,
+      designacoes: insertedDesignacoes 
+    })
+  } catch (error: any) {
+    console.error('Error creating designacoes batch:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Criar nova designação
 router.post('/', async (req: Request, res: Response) => {
   try {
