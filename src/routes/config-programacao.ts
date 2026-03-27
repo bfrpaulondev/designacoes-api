@@ -388,21 +388,31 @@ router.get('/secao/:secao', async (req: Request, res: Response) => {
 
 // Função para sincronizar arrays com quantidades
 function sincronizarArrays(data: any, existing: any): any {
-  const result = { ...data }
+  // Primeiro, fazer merge profundo com dados existentes
+  const result = { ...existing, ...data }
+  
+  // Merge avIndicadores
+  if (existing?.avIndicadores || data.avIndicadores) {
+    result.avIndicadores = { ...existing?.avIndicadores, ...data.avIndicadores }
+  }
+  
+  // Merge limpeza
+  if (existing?.limpeza || data.limpeza) {
+    result.limpeza = { ...existing?.limpeza, ...data.limpeza }
+  }
   
   // Sincronizar indicadores
-  const numIndicadores = data.avIndicadores?.numeroIndicadores ?? existing?.avIndicadores?.numeroIndicadores ?? 2
-  const etiquetasIndExist = data.avIndicadores?.etiquetasIndicador || existing?.avIndicadores?.etiquetasIndicador || []
+  const numIndicadores = result.avIndicadores?.numeroIndicadores ?? 2
+  const etiquetasIndExist = result.avIndicadores?.etiquetasIndicador || []
   const novasEtiquetasInd = []
   for (let i = 0; i < numIndicadores; i++) {
     novasEtiquetasInd.push(etiquetasIndExist[i] || { id: `i${i + 1}`, label: `Indicador ${i + 1}`, ativo: true })
   }
-  if (!result.avIndicadores) result.avIndicadores = { ...existing?.avIndicadores }
-  result.avIndicadores = { ...result.avIndicadores, etiquetasIndicador: novasEtiquetasInd }
+  result.avIndicadores.etiquetasIndicador = novasEtiquetasInd
   
   // Sincronizar microfones
-  const numMicrofones = data.avIndicadores?.numeroMicrofones ?? existing?.avIndicadores?.numeroMicrofones ?? 2
-  const etiquetasMicExist = data.avIndicadores?.etiquetasMicrofone || existing?.avIndicadores?.etiquetasMicrofone || []
+  const numMicrofones = result.avIndicadores?.numeroMicrofones ?? 2
+  const etiquetasMicExist = result.avIndicadores?.etiquetasMicrofone || []
   const novasEtiquetasMic = []
   for (let i = 0; i < numMicrofones; i++) {
     novasEtiquetasMic.push(etiquetasMicExist[i] || { id: `m${i + 1}`, label: `Microfone ${i + 1}`, ativo: true })
@@ -410,15 +420,14 @@ function sincronizarArrays(data: any, existing: any): any {
   result.avIndicadores.etiquetasMicrofone = novasEtiquetasMic
   
   // Sincronizar limpeza
-  const numGrupos = data.limpeza?.numeroGruposLimpeza ?? existing?.limpeza?.numeroGruposLimpeza ?? 1
-  const etiquetasLimpezaExist = data.limpeza?.etiquetasLimpeza || existing?.limpeza?.etiquetasLimpeza || []
+  const numGrupos = result.limpeza?.numeroGruposLimpeza ?? 1
+  const etiquetasLimpezaExist = result.limpeza?.etiquetasLimpeza || []
   const novasEtiquetasLimpeza = []
   const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
   for (let i = 0; i < numGrupos; i++) {
     novasEtiquetasLimpeza.push(etiquetasLimpezaExist[i] || { id: `l${i + 1}`, label: `Grupo ${letras[i]}`, ativo: true })
   }
-  if (!result.limpeza) result.limpeza = { ...existing?.limpeza }
-  result.limpeza = { ...result.limpeza, etiquetasLimpeza: novasEtiquetasLimpeza }
+  result.limpeza.etiquetasLimpeza = novasEtiquetasLimpeza
   
   return result
 }
