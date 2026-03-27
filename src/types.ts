@@ -66,3 +66,348 @@ export interface Config {
   emailCongregacao: string
   updatedAt: Date
 }
+
+// ============================================
+// AUSÊNCIAS
+// ============================================
+
+export type TipoAusencia = 'periodo' | 'dias_especificos' | 'recorrente'
+
+export type DiaSemana = 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta' | 'sabado' | 'domingo'
+
+export type TipoDesignacaoAusencia = 
+  | 'todas' 
+  | 'reuniao_meio_semana' 
+  | 'reuniao_fim_semana' 
+  | 'testemunho_publico'
+  | 'leitor'
+  | 'oracao'
+  | 'presidente'
+  | 'indicador'
+  | 'microfone'
+  | 'som'
+  | 'plataforma'
+  | 'limpeza'
+
+export interface Ausencia {
+  _id?: string
+  id: string
+  publicadorId: string
+  publicadorNome: string
+  
+  // Tipo de ausência
+  tipo: TipoAusencia
+  
+  // Para período contínuo
+  dataInicio?: string // formato: YYYY-MM-DD
+  dataFim?: string // formato: YYYY-MM-DD
+  
+  // Para dias específicos (array de datas)
+  diasEspecificos?: string[] // array de datas YYYY-MM-DD
+  
+  // Para recorrente
+  diasSemana?: DiaSemana[] // dias da semana que repete
+  recorrenciaInicio?: string
+  recorrenciaFim?: string
+  
+  // Tipos de designação afetados
+  tiposDesignacao: TipoDesignacaoAusencia[]
+  
+  // Notas
+  notas?: string
+  
+  // Metadata
+  criadoEm: Date
+  atualizadoEm: Date
+}
+
+// ============================================
+// DESIGNAÇÕES
+// ============================================
+
+export type CategoriaDesignacao = 
+  | 'fim_semana'
+  | 'meio_semana'
+  | 'av_indicadores'
+  | 'limpeza'
+  | 'testemunho_publico'
+  | 'hospitalidade'
+  | 'oradores'
+
+export type TipoDesignacaoFimSemana = 
+  | 'presidente'
+  | 'oracao_inicial'
+  | 'oracao_final'
+  | 'dirigente_sentinela'
+  | 'leitor_sentinela'
+  | 'interprete'
+  | 'orador'
+  | 'hospitalidade'
+
+export type TipoDesignacaoMeioSemana = 
+  | 'presidente'
+  | 'presidente_auxiliar'
+  | 'oracao_inicial'
+  | 'oracao_final'
+  | 'tesouros'
+  | 'perolas_espirituais'
+  | 'leitura_biblia'
+  | 'ministerio_iniciar'
+  | 'ministerio_cultivar'
+  | 'ministerio_discipulos'
+  | 'estudo_biblico'
+  | 'leitor_ebc'
+  | 'orador_servico'
+
+export type TipoDesignacaoAV = 
+  | 'som'
+  | 'video'
+  | 'microfone_1'
+  | 'microfone_2'
+  | 'microfone_3'
+  | 'indicador_1'
+  | 'indicador_2'
+  | 'plataforma'
+  | 'zoom'
+
+export type TipoDesignacaoLimpeza = 
+  | 'grupo_limpeza_a'
+  | 'grupo_limpeza_b'
+  | 'grupo_limpeza_c'
+  | 'grupo_limpeza_d'
+  | 'grupo_limpeza_e'
+
+export type TipoDesignacaoTestemunho = 
+  | 'testemunho_sabado_manha'
+  | 'testemunho_sabado_tarde'
+  | 'testemunho_domingo_manha'
+  | 'testemunho_domingo_tarde'
+
+export type TipoDesignacao = 
+  | TipoDesignacaoFimSemana 
+  | TipoDesignacaoMeioSemana 
+  | TipoDesignacaoAV 
+  | TipoDesignacaoLimpeza 
+  | TipoDesignacaoTestemunho
+  | 'hospitalidade'
+  | 'orador'
+
+export type StatusDesignacao = 
+  | 'pendente'
+  | 'agendado'
+  | 'confirmado'
+  | 'realizado'
+  | 'cancelado'
+  | 'substituido'
+  | 'ausente'
+
+export interface Designacao {
+  _id?: string
+  id: string
+  publicadorId: string
+  publicadorNome: string
+  tipo: TipoDesignacao
+  categoria: CategoriaDesignacao
+  data: string // YYYY-MM-DD
+  semanaId?: string
+  status: StatusDesignacao
+  confirmadoEm?: string
+  confirmadoPor?: string
+  observacoes?: string
+  
+  // Campos específicos para meio de semana
+  sala?: 'principal' | 'auxiliar_1' | 'auxiliar_2'
+  ajudanteId?: string
+  ajudanteNome?: string
+  
+  // Campos específicos para fim de semana
+  discursoTema?: string
+  discursoNumero?: string
+  oradorCongregacao?: string
+  
+  // Campos específicos para AV
+  etiqueta?: string
+  
+  // Campos específicos para limpeza
+  grupoId?: string
+  grupoNome?: string
+  
+  // Campos específicos para testemunho público
+  horaInicio?: string
+  horaFim?: string
+  local?: string
+  companheiroId?: string
+  companheiroNome?: string
+  
+  criadoEm: Date
+  atualizadoEm: Date
+}
+
+// ============================================
+// CONFIGURAÇÕES DE PROGRAMAÇÃO
+// ============================================
+
+export interface EtiquetaConfig {
+  id: string
+  label: string
+  ativo: boolean
+}
+
+export interface ConfigFimSemana {
+  ativarHospitalidade: boolean
+  organizarHospitalidadePorGrupo: boolean
+  mostrarLeitorSentinela: boolean
+  mostrarInterprete: boolean
+  dirigenteSentinela: string
+  nomeCongregacao: string
+  contatoCoordenadorDiscursos: string
+  outroOradorNome: string
+  outroOradorCongregacao: string
+  outroOradorTituloDiscurso: string
+  esconderOradoresFora: boolean
+  designarOradorOrcadorFinal: boolean
+  nomeSuperintendenteCircuito: string
+  tituloDiscursoPublicoSC: string
+  tituloDiscursoServicoSC: string
+  canticoFinalVisitaSC: number
+  formatoDataImpressao: 'weekof' | 'dayof'
+  modeloEmailLembrete: string
+}
+
+export interface ConfigMeioSemana {
+  temaDiscursoServico: string
+  canticoFinalVisitaSCMeio: number
+  numeroClassesAuxiliares: number
+  formatoDataImpressao: 'weekof' | 'dayof'
+  gerarFormularioS89: boolean
+}
+
+export interface ConfigAVIndicadores {
+  numeroMicrofones: number
+  numeroIndicadores: number
+  numeroAssistentesZoom: number
+  numeroDesignacoesPalco: number
+  numeroDesignacoesSom: number
+  numeroDesignacoesVideo: number
+  etiquetasVideo: EtiquetaConfig[]
+  etiquetasAudio: EtiquetaConfig[]
+  etiquetasMicrofone: EtiquetaConfig[]
+  etiquetasPalco: EtiquetaConfig[]
+  etiquetasIndicador: EtiquetaConfig[]
+  etiquetasZoom: EtiquetaConfig[]
+  lapelasIndicador: EtiquetaConfig[]
+  programacaoAVSemanal: boolean
+}
+
+export interface ConfigLimpeza {
+  numeroGruposLimpeza: number
+  etiquetasLimpeza: EtiquetaConfig[]
+  avisarTodosMembrosGrupo: boolean
+}
+
+export interface ConfigTestemunhoPublico {
+  ativarAgendamentoLivre: boolean
+  permitirProgramarOutros: boolean
+  comportamentoAutoPreenchimento: 'genero_familia' | 'todos'
+  permitirDefinirDisponibilidade: boolean
+}
+
+export interface ConfigAusencias {
+  notificarCoordenador: boolean
+  notificarPublicador: boolean
+  diasAntecedenciaNotificacao: number
+  permitirAusenciaRecorrente: boolean
+  maxDiasAusenciaContinua: number
+  requerAprovacao: boolean
+  bloquearDesignacoesAutomaticas: boolean
+  mostrarAusentesNaEscala: boolean
+  tiposAusenciaPermitidos: ('periodo' | 'dias_especificos' | 'recorrente')[]
+  motivosPreDefinidos: string[]
+}
+
+export interface ConfigDesignacoes {
+  periodoMinimoEntreDesignacoes: number
+  maxDesignacoesConsecutivas: number
+  evitarMesmaPessoaSemanaSeguinte: boolean
+  priorizarPioneiros: boolean
+  priorizarSemDesignacao: boolean
+  diasUrgencia: number
+  balancearPorGenero: boolean
+  balancearPorGrupo: boolean
+  requerConfirmacao: boolean
+  diasLimiteConfirmacao: number
+  enviarLembreteAutomatico: boolean
+}
+
+export interface ConfigNotificacoes {
+  emailAtivo: boolean
+  smsAtivo: boolean
+  whatsappAtivo: boolean
+  notificarNovaDesignacao: boolean
+  notificarAlteracaoDesignacao: boolean
+  notificarLembrete: boolean
+  notificarAusenciaAprovada: boolean
+  templateNovaDesignacao: string
+  templateLembreteDesignacao: string
+  templateAusencia: string
+  emailRemetente: string
+  nomeRemetente: string
+  horaEnvioLembretes: string
+  diasAntecedenciaLembrete: number
+}
+
+export interface ConfigHorarios {
+  diaMeioSemana: 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta'
+  horaInicioMeioSemana: string
+  horaFimMeioSemana: string
+  diaFimSemana: 'sabado' | 'domingo'
+  horaInicioFimSemana: string
+  horaFimFimSemana: string
+  horariosTestemunhoPublico: {
+    dia: 'sabado' | 'domingo'
+    horaInicio: string
+    horaFim: string
+  }[]
+}
+
+export interface ConfigPermissoes {
+  anciãos: {
+    editarDesignacoes: boolean
+    editarAusencias: boolean
+    verRelatorios: boolean
+    exportarDados: boolean
+  }
+  servosMinisteriais: {
+    editarDesignacoes: boolean
+    editarAusencias: boolean
+    verRelatorios: boolean
+    exportarDados: boolean
+  }
+  publicadores: {
+    verPropriaEscala: boolean
+    editarPropriaDisponibilidade: boolean
+    verOutrasEscalas: boolean
+  }
+}
+
+export interface ConfiguracoesProgramacao {
+  _id?: string
+  id: string
+  nome: string
+  versao: string
+  
+  fimSemana: ConfigFimSemana
+  meioSemana: ConfigMeioSemana
+  avIndicadores: ConfigAVIndicadores
+  limpeza: ConfigLimpeza
+  testemunhoPublico: ConfigTestemunhoPublico
+  
+  ausencias: ConfigAusencias
+  designacoes: ConfigDesignacoes
+  notificacoes: ConfigNotificacoes
+  horarios: ConfigHorarios
+  permissoes: ConfigPermissoes
+  
+  atualizadoEm: Date
+  atualizadoPor: string
+}

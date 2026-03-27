@@ -6,6 +6,9 @@ import publicadoresRoutes from './routes/publicadores.js'
 import etiquetasRoutes from './routes/etiquetas.js'
 import semanasRoutes from './routes/semanas.js'
 import configRoutes from './routes/config.js'
+import ausenciasRoutes from './routes/ausencias.js'
+import designacoesRoutes from './routes/designacoes.js'
+import configProgramacaoRoutes from './routes/config-programacao.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -47,6 +50,9 @@ app.use('/api/publicadores', publicadoresRoutes)
 app.use('/api/etiquetas', etiquetasRoutes)
 app.use('/api/semanas', semanasRoutes)
 app.use('/api/config', configRoutes)
+app.use('/api/ausencias', ausenciasRoutes)
+app.use('/api/designacoes', designacoesRoutes)
+app.use('/api/config-programacao', configProgramacaoRoutes)
 
 // Error handler
 app.use((err: Error, req: Request, res: Response, next: any) => {
