@@ -1,11 +1,15 @@
 import { Router, Request, Response } from 'express'
 import { getDb } from '../db.js'
 import { ObjectId } from 'mongodb'
+import { authenticate, authorize, auditAction } from '../middleware/auth.js'
 
 const router = Router()
 
+// Aplicar autenticação em todas as rotas
+router.use(authenticate)
+
 // Listar todos os publicadores
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authorize('publicadores', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const publicadores = await db.collection('publicadores')
@@ -21,7 +25,7 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 // Obter um publicador por ID
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', authorize('publicadores', 'read'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()
@@ -46,7 +50,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 })
 
 // Criar novo publicador
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authorize('publicadores', 'create'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const data = req.body
@@ -83,6 +87,9 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     const result = await db.collection('publicadores').insertOne(publicador)
+    
+    await auditAction(req, 'create', 'publicadores', publicador.id, { nome: publicador.nomeCompleto })
+    
     res.status(201).json({ 
       publicador: { ...publicador, _id: result.insertedId } 
     })
@@ -93,7 +100,7 @@ router.post('/', async (req: Request, res: Response) => {
 })
 
 // Atualizar publicador
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', authorize('publicadores', 'update'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()
@@ -137,6 +144,9 @@ router.put('/:id', async (req: Request, res: Response) => {
     )
 
     const updated = await db.collection('publicadores').findOne({ id: existing.id })
+    
+    await auditAction(req, 'update', 'publicadores', existing.id, { changes: updateData })
+    
     res.json({ publicador: updated })
   } catch (error: any) {
     console.error('Error updating publicador:', error)
@@ -144,8 +154,8 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 })
 
-// Excluir TODOS os publicadores (deve vir antes de /:id)
-router.delete('/all', async (req: Request, res: Response) => {
+// Excluir TODOS os publicadores (deve vir antes de /:id) - Apenas admin
+router.delete('/all', authorize('publicadores', 'delete'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
 
@@ -157,6 +167,12 @@ router.delete('/all', async (req: Request, res: Response) => {
     
     // Excluir todos os publicadores
     const publicadoresResult = await db.collection('publicadores').deleteMany({})
+
+    await auditAction(req, 'delete_all', 'publicadores', undefined, { 
+      publicadoresExcluidos: publicadoresResult.deletedCount,
+      designacoesExcluidas: designacoesResult.deletedCount,
+      ausenciasExcluidas: ausenciasResult.deletedCount
+    })
 
     res.json({ 
       message: 'Todos os dados foram excluídos com sucesso',
@@ -173,12 +189,17 @@ router.delete('/all', async (req: Request, res: Response) => {
 })
 
 // Excluir publicador
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', authorize('publicadores', 'delete'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()
 
+    const publicador = await db.collection('publicadores').findOne({ id })
+    
     await db.collection('publicadores').deleteOne({ id })
+    
+    await auditAction(req, 'delete', 'publicadores', id, { nome: publicador?.nomeCompleto })
+    
     res.json({ message: 'Publicador excluído com sucesso' })
   } catch (error: any) {
     console.error('Error deleting publicador:', error)

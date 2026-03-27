@@ -1,11 +1,15 @@
 import { Router, Request, Response } from 'express'
 import { getDb } from '../db.js'
 import { ObjectId } from 'mongodb'
+import { authenticate, authorize, auditAction } from '../middleware/auth.js'
 
 const router = Router()
 
+// Aplicar autenticação em todas as rotas
+router.use(authenticate)
+
 // Listar todas as designações
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authorize('designacoes', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     
@@ -279,7 +283,7 @@ function mapearTipoDesignacao(tipo: string, categoria: string): string[] {
 }
 
 // Criar múltiplas designações (batch)
-router.post('/batch', async (req: Request, res: Response) => {
+router.post('/batch', authorize('designacoes', 'create'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const { designacoes } = req.body
@@ -351,7 +355,7 @@ router.post('/batch', async (req: Request, res: Response) => {
 })
 
 // Criar nova designação
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authorize('designacoes', 'create'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const data = req.body
@@ -409,6 +413,11 @@ router.post('/', async (req: Request, res: Response) => {
 
     const result = await db.collection('designacoes').insertOne(designacao)
     
+    await auditAction(req, 'create', 'designacoes', designacao.id, { 
+      tipo: data.tipo, 
+      publicador: publicadorNome 
+    })
+    
     res.status(201).json({ 
       designacao: { ...designacao, _id: result.insertedId } 
     })
@@ -419,7 +428,7 @@ router.post('/', async (req: Request, res: Response) => {
 })
 
 // Atualizar designação
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', authorize('designacoes', 'update'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()
@@ -550,16 +559,23 @@ router.post('/:id/substituir', async (req: Request, res: Response) => {
 })
 
 // Excluir designação
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', authorize('designacoes', 'delete'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()
 
+    const designacao = await db.collection('designacoes').findOne({ id })
+    
     const result = await db.collection('designacoes').deleteOne({ id })
     
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Designação não encontrada' })
     }
+    
+    await auditAction(req, 'delete', 'designacoes', id, { 
+      tipo: designacao?.tipo, 
+      publicador: designacao?.publicadorNome 
+    })
     
     res.json({ message: 'Designação excluída com sucesso' })
   } catch (error: any) {

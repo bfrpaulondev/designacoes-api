@@ -311,8 +311,8 @@ router.get('/', async (req: Request, res: Response) => {
     
     if (!config) {
       const defaultConfig = { ...CONFIGURACOES_PADRAO, atualizadoEm: new Date(), atualizadoPor: 'sistema' }
-      await db.collection('config-programacao').insertOne(defaultConfig)
-      config = defaultConfig
+      await db.collection('config-programacao').insertOne(defaultConfig as any)
+      config = defaultConfig as any
     }
     
     const tiposAV = gerarTiposAVDinamicos(config)

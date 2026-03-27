@@ -1,9 +1,243 @@
+// ============================================
+// SISTEMA DE PRIVILÉGIOS E PERMISSÕES
+// ============================================
+
+/**
+ * Tipos de papel/role no sistema
+ * Hierarquia: super_admin > admin > ancião > servo_ministerial > publicador > convidado
+ */
+export type UserRole = 
+  | 'super_admin'      // Acesso total ao sistema
+  | 'admin'            // Administrador da congregação
+  | 'anciao'           // Ancião (presbítero)
+  | 'servo_ministerial' // Servo ministerial (diácono)
+  | 'publicador'       // Publicador batizado
+  | 'publicador_nao_batizado' // Publicador não batizado
+  | 'convidado'        // Acesso limitado/visualização
+
+/**
+ * Recursos do sistema que podem ter permissões
+ */
+export type Resource = 
+  | 'publicadores'
+  | 'designacoes'
+  | 'ausencias'
+  | 'semanas'
+  | 'etiquetas'
+  | 'configuracoes'
+  | 'usuarios'
+  | 'privilegios'
+  | 'relatorios'
+  | 'notificacoes'
+  | 'limpeza'
+  | 'testemunho_publico'
+  | 'av_indicadores'
+
+/**
+ * Ações disponíveis para cada recurso
+ */
+export type Action = 
+  | 'create'    // Criar novo registro
+  | 'read'      // Visualizar
+  | 'update'    // Atualizar/editar
+  | 'delete'    // Excluir
+  | 'export'    // Exportar dados
+  | 'import'    // Importar dados
+  | 'manage'    // Gerenciar (permissão total sobre o recurso)
+  | 'assign'    // Atribuir a outros
+  | 'approve'   // Aprovar solicitações
+  | 'view_own'  // Ver apenas próprios dados
+  | 'edit_own'  // Editar apenas próprios dados
+
+/**
+ * Definição de uma permissão específica
+ */
+export interface Permission {
+  resource: Resource
+  action: Action
+  conditions?: PermissionCondition[]
+}
+
+/**
+ * Condições para permissões (ex: apenas próprio grupo, apenas próprios dados)
+ */
+export interface PermissionCondition {
+  type: 'own_data' | 'own_group' | 'specific_ids' | 'time_range' | 'status'
+  value: any
+}
+
+/**
+ * Papel com permissões definidas
+ */
+export interface Role {
+  _id?: string
+  id: string
+  name: string
+  description: string
+  level: number // Nível hierárquico (maior = mais privilégios)
+  permissions: Permission[]
+  inheritsFrom?: string // ID de outro papel para herdar permissões
+  isSystem: boolean // Se é um papel do sistema (não pode ser excluído)
+  createdAt: Date
+  updatedAt: Date
+}
+
+/**
+ * Privilégio de serviço na congregação
+ */
+export type PrivilegioServico = 
+  | 'nenhum'
+  | 'pioneiro_auxiliar'
+  | 'pioneiro_regular'
+  | 'pioneiro_especial'
+  | 'missionario'
+  | 'servo_ministerial'
+  | 'anciao'
+  | 'superintendente_grupo'
+  | 'dirigente_estudo'
+  | 'leitor'
+  | 'presidente_reuniao'
+  | 'orador'
+  | 'coordenador_av'
+  | 'operador_som'
+  | 'operador_video'
+  | 'indicador'
+  | 'microfonista'
+  | 'plataforma'
+  | 'zoom_host'
+  | 'coordenador_limpeza'
+  | 'hospitalidade'
+
+/**
+ * Designações especiais que um usuário pode ter
+ */
+export type DesignacaoEspecial =
+  | 'coordenador_designacoes'
+  | 'secretario'
+  | 'tesoureiro'
+  | 'secretario_auxiliar'
+  | 'tesoureiro_auxiliar'
+  | 'coordenador_testemunho_publico'
+  | 'supervisor_grupo_campo'
+
+/**
+ * Usuário do sistema com permissões detalhadas
+ */
 export interface User {
-  _id: string
+  _id?: string
+  id?: string
   email: string
   password: string
   name: string
-  role: 'admin' | 'editor' | 'viewer'
+  
+  // Papel principal no sistema
+  role: UserRole
+  
+  // Privilégios de serviço
+  privilegioServico?: PrivilegioServico
+  designacoesEspeciais?: DesignacaoEspecial[]
+  
+  // Permissões customizadas (além das do papel)
+  customPermissions?: Permission[]
+  
+  // Restrições específicas
+  restrictions?: UserRestriction[]
+  
+  // Grupos que o usuário gerencia (se aplicável)
+  managedGroups?: string[]
+  
+  // Metadados
+  publicadorId?: string // Link com o cadastro de publicador
+  isActive?: boolean
+  lastLogin?: Date
+  passwordChangedAt?: Date
+  failedLoginAttempts?: number
+  lockedUntil?: Date
+  
+  // Preferências do usuário
+  preferences?: UserPreferences
+  
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+/**
+ * Restrições aplicadas a um usuário
+ */
+export interface UserRestriction {
+  type: 'time_based' | 'resource_based' | 'action_based' | 'group_based'
+  resource?: Resource
+  action?: Action
+  groupId?: string
+  startTime?: string
+  endTime?: string
+  reason?: string
+  appliedBy?: string
+  appliedAt: Date
+  expiresAt?: Date
+}
+
+/**
+ * Preferências do usuário
+ */
+export interface UserPreferences {
+  language: 'pt' | 'en' | 'es'
+  timezone: string
+  theme: 'light' | 'dark' | 'auto'
+  notifications: NotificationPreferences
+  dashboard: DashboardPreferences
+}
+
+export interface NotificationPreferences {
+  email: boolean
+  sms: boolean
+  whatsapp: boolean
+  newAssignment: boolean
+  assignmentReminder: boolean
+  absenceApproved: boolean
+  weeklySchedule: boolean
+  reminderDays: number
+}
+
+export interface DashboardPreferences {
+  defaultView: 'week' | 'month' | 'list'
+  showWeekend: boolean
+  showMidweek: boolean
+  showCleaning: boolean
+  showPublicWitnessing: boolean
+}
+
+/**
+ * Log de auditoria de ações
+ */
+export interface AuditLog {
+  _id?: string
+  id: string
+  userId: string
+  userName: string
+  action: string
+  resource: Resource
+  resourceId?: string
+  details: Record<string, any>
+  ipAddress: string
+  userAgent: string
+  timestamp: Date
+}
+
+/**
+ * Solicitação de permissão/role
+ */
+export interface PermissionRequest {
+  _id?: string
+  id: string
+  requestedBy: string
+  requestedRole?: UserRole
+  requestedPermissions?: Permission[]
+  reason: string
+  status: 'pending' | 'approved' | 'rejected'
+  reviewedBy?: string
+  reviewedAt?: Date
+  reviewNotes?: string
   createdAt: Date
   updatedAt: Date
 }
