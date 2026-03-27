@@ -246,13 +246,15 @@ const CONFIGURACOES_PADRAO = {
 
 function gerarTiposAVDinamicos(config: any) {
   const tipos: any[] = []
-  const quantidades = config?.quantidades || CONFIGURACOES_PADRAO.quantidades
   const etiquetas = config?.avIndicadores || CONFIGURACOES_PADRAO.avIndicadores
+  
+  // Priorizar quantidades.avIndicadores, depois quantidades, depois avIndicadores
+  const numMics = config?.quantidades?.microfones || config?.avIndicadores?.numeroMicrofones || etiquetas.numeroMicrofones || 2
+  const numIndicadores = config?.quantidades?.indicadores || config?.avIndicadores?.numeroIndicadores || etiquetas.numeroIndicadores || 2
   
   tipos.push({ id: 'som', label: 'Som', icon: '🔊', ordem: 1 })
   tipos.push({ id: 'video', label: 'Vídeo', icon: '🎬', ordem: 2 })
   
-  const numMics = quantidades.microfones || 2
   const etiquetasMic = etiquetas.etiquetasMicrofone || []
   for (let i = 1; i <= numMics; i++) {
     tipos.push({
@@ -263,7 +265,6 @@ function gerarTiposAVDinamicos(config: any) {
     })
   }
   
-  const numIndicadores = quantidades.indicadores || 2
   const etiquetasInd = etiquetas.etiquetasIndicador || []
   for (let i = 1; i <= numIndicadores; i++) {
     tipos.push({
@@ -441,9 +442,8 @@ router.get('/microfones', async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})
-    const quantidades = config?.quantidades || CONFIGURACOES_PADRAO.quantidades
     const etiquetas = config?.avIndicadores?.etiquetasMicrofone || CONFIGURACOES_PADRAO.avIndicadores.etiquetasMicrofone
-    const num = quantidades.microfones || 2
+    const num = config?.quantidades?.microfones || config?.avIndicadores?.numeroMicrofones || 2
     
     res.json({ microfones: Array.from({ length: num }, (_, i) => ({
       id: `microfone_${i + 1}`,
@@ -461,9 +461,8 @@ router.get('/indicadores', async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})
-    const quantidades = config?.quantidades || CONFIGURACOES_PADRAO.quantidades
     const etiquetas = config?.avIndicadores?.etiquetasIndicador || CONFIGURACOES_PADRAO.avIndicadores.etiquetasIndicador
-    const num = quantidades.indicadores || 2
+    const num = config?.quantidades?.indicadores || config?.avIndicadores?.numeroIndicadores || 2
     
     res.json({ indicadores: Array.from({ length: num }, (_, i) => ({
       id: `indicador_${i + 1}`,
