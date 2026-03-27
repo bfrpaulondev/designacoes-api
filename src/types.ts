@@ -357,8 +357,8 @@ export interface Publicador {
   restricoes: any[]
   observacoes?: string
   
-  // Qualificações para designações
-  qualificacoes?: QualificacaoPublicador[]
+  // Designações que este publicador está qualificado para receber
+  designacoesQualificado?: string[]
   
   createdAt: Date
   updatedAt: Date
