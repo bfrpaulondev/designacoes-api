@@ -386,6 +386,43 @@ router.get('/secao/:secao', async (req: Request, res: Response) => {
   }
 })
 
+// Função para sincronizar arrays com quantidades
+function sincronizarArrays(data: any, existing: any): any {
+  const result = { ...data }
+  
+  // Sincronizar indicadores
+  const numIndicadores = data.avIndicadores?.numeroIndicadores ?? existing?.avIndicadores?.numeroIndicadores ?? 2
+  const etiquetasIndExist = data.avIndicadores?.etiquetasIndicador || existing?.avIndicadores?.etiquetasIndicador || []
+  const novasEtiquetasInd = []
+  for (let i = 0; i < numIndicadores; i++) {
+    novasEtiquetasInd.push(etiquetasIndExist[i] || { id: `i${i + 1}`, label: `Indicador ${i + 1}`, ativo: true })
+  }
+  if (!result.avIndicadores) result.avIndicadores = { ...existing?.avIndicadores }
+  result.avIndicadores = { ...result.avIndicadores, etiquetasIndicador: novasEtiquetasInd }
+  
+  // Sincronizar microfones
+  const numMicrofones = data.avIndicadores?.numeroMicrofones ?? existing?.avIndicadores?.numeroMicrofones ?? 2
+  const etiquetasMicExist = data.avIndicadores?.etiquetasMicrofone || existing?.avIndicadores?.etiquetasMicrofone || []
+  const novasEtiquetasMic = []
+  for (let i = 0; i < numMicrofones; i++) {
+    novasEtiquetasMic.push(etiquetasMicExist[i] || { id: `m${i + 1}`, label: `Microfone ${i + 1}`, ativo: true })
+  }
+  result.avIndicadores.etiquetasMicrofone = novasEtiquetasMic
+  
+  // Sincronizar limpeza
+  const numGrupos = data.limpeza?.numeroGruposLimpeza ?? existing?.limpeza?.numeroGruposLimpeza ?? 1
+  const etiquetasLimpezaExist = data.limpeza?.etiquetasLimpeza || existing?.limpeza?.etiquetasLimpeza || []
+  const novasEtiquetasLimpeza = []
+  const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+  for (let i = 0; i < numGrupos; i++) {
+    novasEtiquetasLimpeza.push(etiquetasLimpezaExist[i] || { id: `l${i + 1}`, label: `Grupo ${letras[i]}`, ativo: true })
+  }
+  if (!result.limpeza) result.limpeza = { ...existing?.limpeza }
+  result.limpeza = { ...result.limpeza, etiquetasLimpeza: novasEtiquetasLimpeza }
+  
+  return result
+}
+
 // Salvar configurações
 router.post('/', async (req: Request, res: Response) => {
   try {
@@ -393,10 +430,13 @@ router.post('/', async (req: Request, res: Response) => {
     const { _id, ...dataWithoutId } = req.body
     const existing = await db.collection('config-programacao').findOne({})
 
+    // Sincronizar arrays com as quantidades
+    const dataSincronizada = sincronizarArrays(dataWithoutId, existing)
+
     if (existing) {
-      await db.collection('config-programacao').updateOne({}, { $set: { ...dataWithoutId, atualizadoEm: new Date(), atualizadoPor: dataWithoutId.atualizadoPor || 'usuario' } })
+      await db.collection('config-programacao').updateOne({}, { $set: { ...dataSincronizada, atualizadoEm: new Date(), atualizadoPor: dataSincronizada.atualizadoPor || 'usuario' } })
     } else {
-      await db.collection('config-programacao').insertOne({ ...dataWithoutId, atualizadoEm: new Date(), atualizadoPor: dataWithoutId.atualizadoPor || 'usuario' })
+      await db.collection('config-programacao').insertOne({ ...dataSincronizada, atualizadoEm: new Date(), atualizadoPor: dataSincronizada.atualizadoPor || 'usuario' })
     }
 
     res.json({ config: await db.collection('config-programacao').findOne({}) })
@@ -413,9 +453,13 @@ router.put('/secao/:secao', async (req: Request, res: Response) => {
     const existing = await db.collection('config-programacao').findOne({})
 
     if (!existing) {
-      await db.collection('config-programacao').insertOne({ ...CONFIGURACOES_PADRAO, [secao]: req.body, atualizadoEm: new Date(), atualizadoPor: 'usuario' })
+      const newConfig = { ...CONFIGURACOES_PADRAO, [secao]: req.body, atualizadoEm: new Date(), atualizadoPor: 'usuario' }
+      const sincronizado = sincronizarArrays(newConfig, null)
+      await db.collection('config-programacao').insertOne(sincronizado)
     } else {
-      await db.collection('config-programacao').updateOne({}, { $set: { [secao]: req.body, atualizadoEm: new Date(), atualizadoPor: 'usuario' } })
+      const updatedData = { ...existing, [secao]: req.body }
+      const sincronizado = sincronizarArrays(updatedData, existing)
+      await db.collection('config-programacao').updateOne({}, { $set: { ...sincronizado, atualizadoEm: new Date(), atualizadoPor: 'usuario' } })
     }
 
     res.json({ config: await db.collection('config-programacao').findOne({}) })
