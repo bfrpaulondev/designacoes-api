@@ -220,6 +220,9 @@ router.post('/', async (req: Request, res: Response) => {
     const db = await getDb()
     const data = req.body
 
+    // Remover campos que não devem ser atualizados
+    const { _id, ...dataWithoutId } = data
+
     const existing = await db.collection('config-programacao').findOne({})
 
     if (existing) {
@@ -227,17 +230,17 @@ router.post('/', async (req: Request, res: Response) => {
         {},
         { 
           $set: { 
-            ...data,
+            ...dataWithoutId,
             atualizadoEm: new Date(),
-            atualizadoPor: data.atualizadoPor || 'usuario'
+            atualizadoPor: dataWithoutId.atualizadoPor || 'usuario'
           } 
         }
       )
     } else {
       await db.collection('config-programacao').insertOne({
-        ...data,
+        ...dataWithoutId,
         atualizadoEm: new Date(),
-        atualizadoPor: data.atualizadoPor || 'usuario'
+        atualizadoPor: dataWithoutId.atualizadoPor || 'usuario'
       })
     }
 
