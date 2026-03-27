@@ -248,9 +248,9 @@ function gerarTiposAVDinamicos(config: any) {
   const tipos: any[] = []
   const etiquetas = config?.avIndicadores || CONFIGURACOES_PADRAO.avIndicadores
   
-  // Priorizar quantidades.avIndicadores, depois quantidades, depois avIndicadores
-  const numMics = config?.quantidades?.microfones || config?.avIndicadores?.numeroMicrofones || etiquetas.numeroMicrofones || 2
-  const numIndicadores = config?.quantidades?.indicadores || config?.avIndicadores?.numeroIndicadores || etiquetas.numeroIndicadores || 2
+  // Priorizar avIndicadores.numeroIndicadores, depois quantidades.indicadores
+  const numMics = config?.avIndicadores?.numeroMicrofones || config?.quantidades?.microfones || 2
+  const numIndicadores = config?.avIndicadores?.numeroIndicadores || config?.quantidades?.indicadores || 2
   
   tipos.push({ id: 'som', label: 'Som', icon: '🔊', ordem: 1 })
   tipos.push({ id: 'video', label: 'Vídeo', icon: '🎬', ordem: 2 })
@@ -399,6 +399,24 @@ function sincronizarArrays(data: any, existing: any): any {
   // Merge limpeza
   if (existing?.limpeza || data.limpeza) {
     result.limpeza = { ...existing?.limpeza, ...data.limpeza }
+  }
+  
+  // Merge quantidades (sincronizar com avIndicadores)
+  if (existing?.quantidades || data.quantidades || data.avIndicadores) {
+    result.quantidades = { ...existing?.quantidades, ...data.quantidades }
+    // Sincronizar quantidades com avIndicadores
+    if (data.avIndicadores?.numeroMicrofones !== undefined) {
+      result.quantidades.microfones = data.avIndicadores.numeroMicrofones
+    }
+    if (data.avIndicadores?.numeroIndicadores !== undefined) {
+      result.quantidades.indicadores = data.avIndicadores.numeroIndicadores
+    }
+    if (data.avIndicadores?.numeroAssistentesZoom !== undefined) {
+      result.quantidades.assistentesZoom = data.avIndicadores.numeroAssistentesZoom
+    }
+    if (data.limpeza?.numeroGruposLimpeza !== undefined) {
+      result.quantidades.gruposLimpeza = data.limpeza.numeroGruposLimpeza
+    }
   }
   
   // Sincronizar indicadores
