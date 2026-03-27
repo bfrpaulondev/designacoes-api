@@ -242,6 +242,98 @@ export interface PermissionRequest {
   updatedAt: Date
 }
 
+// ============================================
+// QUALIFICAÇÕES PARA DESIGNAÇÕES
+// ============================================
+
+/**
+ * Tipos de qualificações que um publicador pode ter
+ * Define quais tipos de designações cada um pode receber
+ */
+export type TipoQualificacao =
+  // Reunião Fim de Semana
+  | 'presidente_fim_semana'
+  | 'oracao'
+  | 'dirigente_sentinela'
+  | 'leitor_sentinela'
+  | 'orador'
+  | 'interprete'
+  | 'hospitalidade'
+  
+  // Reunião Meio de Semana
+  | 'presidente_meio_semana'
+  | 'presidente_auxiliar'
+  | 'tesouros'
+  | 'perolas_espirituais'
+  | 'leitura_biblia'
+  | 'ministerio_iniciar'
+  | 'ministerio_cultivar'
+  | 'ministerio_discipulos'
+  | 'estudo_biblico'
+  | 'leitor_ebc'
+  | 'orador_servico'
+  
+  // AV e Indicadores
+  | 'operador_som'
+  | 'operador_video'
+  | 'microfonista'
+  | 'indicador'
+  | 'plataforma'
+  | 'zoom_host'
+  
+  // Limpeza
+  | 'coordenador_limpeza'
+  | 'membro_limpeza'
+  
+  // Testemunho Público
+  | 'testemunho_publico'
+  | 'dirigente_grupo_campo'
+
+/**
+ * Nível de proficiência em uma qualificação
+ */
+export type NivelProficiencia = 
+  | 'aprendiz'     // Em treinamento, precisa supervisão
+  | 'qualificado'  // Pode fazer sem supervisão
+  | 'experiente'   // Pode treinar outros
+  | 'especialista' // Altamente experiente, pode coordenar
+
+/**
+ * Status da qualificação
+ */
+export type StatusQualificacao = 
+  | 'ativo'        // Pode ser designado
+  | 'inativo'      // Temporariamente indisponível
+  | 'em_treinamento' // Ainda aprendendo
+  | 'restrito'     // Com restrições temporárias
+
+/**
+ * Qualificação de um publicador
+ */
+export interface QualificacaoPublicador {
+  tipo: TipoQualificacao
+  nivel: NivelProficiencia
+  status: StatusQualificacao
+  dataInicio?: Date          // Quando começou a ter essa qualificação
+  dataAprovacao?: Date       // Quando foi aprovado como qualificado
+  aprovadoPor?: string       // ID do ancião que aprovou
+  observacoes?: string       // Notas sobre a qualificação
+  ultimaDesignacao?: Date    // Última vez que foi designado
+  totalDesignacoes?: number  // Quantas vezes já fez
+}
+
+/**
+ * Categoria de qualificação para agrupamento
+ */
+export interface CategoriaQualificacao {
+  id: string
+  nome: string
+  descricao: string
+  icone?: string
+  tipos: TipoQualificacao[]
+  ordem: number
+}
+
 export interface Publicador {
   _id?: string
   id: string
@@ -264,6 +356,10 @@ export interface Publicador {
   etiquetas: string[]
   restricoes: any[]
   observacoes?: string
+  
+  // Qualificações para designações
+  qualificacoes?: QualificacaoPublicador[]
+  
   createdAt: Date
   updatedAt: Date
 }

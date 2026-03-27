@@ -10,6 +10,7 @@ import ausenciasRoutes from './routes/ausencias.js'
 import designacoesRoutes from './routes/designacoes.js'
 import configProgramacaoRoutes from './routes/config-programacao.js'
 import privilegiosRoutes from './routes/privilegios.js'
+import qualificacoesRoutes from './routes/qualificacoes.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -55,6 +56,7 @@ app.use('/api/ausencias', ausenciasRoutes)
 app.use('/api/designacoes', designacoesRoutes)
 app.use('/api/config-programacao', configProgramacaoRoutes)
 app.use('/api/privilegios', privilegiosRoutes)
+app.use('/api/qualificacoes', qualificacoesRoutes)
 
 // Error handler
 app.use((err: Error, req: Request, res: Response, next: any) => {
