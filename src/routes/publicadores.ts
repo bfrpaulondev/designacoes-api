@@ -107,9 +107,21 @@ router.put('/:id', async (req: Request, res: Response) => {
       updatedAt: new Date()
     }
 
+    // Tentar encontrar por `id` ou `_id`
+    let existing: any = null
+    if (ObjectId.isValid(id)) {
+      existing = await db.collection('publicadores').findOne({ _id: new ObjectId(id) })
+    }
+    if (!existing) {
+      existing = await db.collection('publicadores').findOne({ id })
+    }
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Publicador não encontrado' })
+    }
+
     // Recalcular nomes se necessário
     if (data.nomePrimeiro !== undefined || data.nomeUltimo !== undefined) {
-      const existing = await db.collection('publicadores').findOne({ id })
       const nomePrimeiro = data.nomePrimeiro ?? existing?.nomePrimeiro ?? ''
       const nomeUltimo = data.nomeUltimo ?? existing?.nomeUltimo ?? ''
       updateData.nomeCompleto = `${nomePrimeiro} ${nomeUltimo}`.trim()
@@ -118,12 +130,13 @@ router.put('/:id', async (req: Request, res: Response) => {
       updateData.nomeUltimo = nomeUltimo
     }
 
+    // Atualizar usando o `id` do documento encontrado
     await db.collection('publicadores').updateOne(
-      { id },
+      { id: existing.id },
       { $set: updateData }
     )
 
-    const updated = await db.collection('publicadores').findOne({ id })
+    const updated = await db.collection('publicadores').findOne({ id: existing.id })
     res.json({ publicador: updated })
   } catch (error: any) {
     console.error('Error updating publicador:', error)
