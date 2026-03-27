@@ -128,6 +128,34 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 })
 
+// Excluir TODOS os publicadores (deve vir antes de /:id)
+router.delete('/all', async (req: Request, res: Response) => {
+  try {
+    const db = await getDb()
+
+    // Excluir todas as designações primeiro
+    const designacoesResult = await db.collection('designacoes').deleteMany({})
+    
+    // Excluir todas as ausências
+    const ausenciasResult = await db.collection('ausencias').deleteMany({})
+    
+    // Excluir todos os publicadores
+    const publicadoresResult = await db.collection('publicadores').deleteMany({})
+
+    res.json({ 
+      message: 'Todos os dados foram excluídos com sucesso',
+      excluidos: {
+        publicadores: publicadoresResult.deletedCount,
+        designacoes: designacoesResult.deletedCount,
+        ausencias: ausenciasResult.deletedCount
+      }
+    })
+  } catch (error: any) {
+    console.error('Error deleting all publicadores:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Excluir publicador
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
