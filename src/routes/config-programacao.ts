@@ -4,18 +4,20 @@ import { ObjectId } from 'mongodb'
 
 const router = Router()
 
-// Configurações padrão completas
+// ============================================
+// CONFIGURAÇÕES PADRÃO COMPLETAS
+// ============================================
+
 const CONFIGURACOES_PADRAO = {
   id: 'default',
   nome: 'Configurações Padrão',
   versao: '3.0.0',
   
   // ============================================
-  // TIPOS DE DESIGNAÇÃO - TOTALMENTE CONFIGURÁVEL
+  // TIPOS DE DESIGNAÇÃO - CONFIGURÁVEIS
   // ============================================
   
   tiposDesignacao: {
-    // Fim de Semana
     fimSemana: [
       { id: 'presidente', label: 'Presidente', icon: '👤', requerAnciao: true, ordem: 1 },
       { id: 'oracao_inicial', label: 'Oração Inicial', icon: '🙏', requerAnciao: true, ordem: 2 },
@@ -26,8 +28,6 @@ const CONFIGURACOES_PADRAO = {
       { id: 'hospitalidade', label: 'Hospitalidade', icon: '🏠', requerAnciao: false, ordem: 7 },
       { id: 'oracao_final', label: 'Oração Final', icon: '🙏', requerAnciao: true, ordem: 8 },
     ],
-    
-    // Meio de Semana
     meioSemana: [
       { id: 'presidente', label: 'Presidente', icon: '👤', requerAnciao: true, requerServo: false, ordem: 1 },
       { id: 'presidente_auxiliar', label: 'Conselheiro Auxiliar', icon: '👥', requerAnciao: true, requerServo: true, ordem: 2 },
@@ -43,14 +43,8 @@ const CONFIGURACOES_PADRAO = {
       { id: 'orador_servico', label: 'Discurso de Serviço', icon: '🎤', requerAnciao: true, requerServo: true, ordem: 12 },
       { id: 'oracao_final', label: 'Oração Final', icon: '🙏', requerAnciao: true, requerServo: false, ordem: 13 },
     ],
-    
-    // A/V e Indicadores - VAZIO, será gerado dinamicamente
-    avIndicadores: [],
-    
-    // Limpeza - VAZIO, será gerado dinamicamente
-    limpeza: [],
-    
-    // Testemunho Público
+    avIndicadores: [], // Gerado dinamicamente
+    limpeza: [], // Gerado dinamicamente
     testemunhoPublico: [
       { id: 'testemunho_sabado_manha', label: 'Testemunho Sábado Manhã', icon: '📢', ordem: 1 },
       { id: 'testemunho_sabado_tarde', label: 'Testemunho Sábado Tarde', icon: '📢', ordem: 2 },
@@ -59,7 +53,6 @@ const CONFIGURACOES_PADRAO = {
     ],
   },
   
-  // Categorias de designação
   categorias: [
     { id: 'fim_semana', label: 'Reunião de Fim de Semana', icon: '📅', cor: '#1976d2' },
     { id: 'meio_semana', label: 'Reunião de Meio de Semana', icon: '📆', cor: '#2196f3' },
@@ -70,7 +63,6 @@ const CONFIGURACOES_PADRAO = {
     { id: 'oradores', label: 'Oradores', icon: '🎤', cor: '#e91e63' },
   ],
   
-  // Status de designação
   statusDesignacao: [
     { id: 'pendente', label: 'Pendente', cor: '#757575', icon: '⏳' },
     { id: 'agendado', label: 'Agendado', cor: '#2196f3', icon: '📅' },
@@ -81,14 +73,12 @@ const CONFIGURACOES_PADRAO = {
     { id: 'ausente', label: 'Ausente', cor: '#ff9800', icon: '🚫' },
   ],
   
-  // Tipos de ausência
   tiposAusencia: [
     { id: 'periodo', label: 'Período (contínuo)', icon: '📅' },
     { id: 'dias_especificos', label: 'Dias Específicos', icon: '📆' },
     { id: 'recorrente', label: 'Recorrente', icon: '🔄' },
   ],
   
-  // Tipos de designação para ausência
   tiposDesignacaoAusencia: [
     { id: 'todas', label: 'Todas as designações' },
     { id: 'reuniao_meio_semana', label: 'Reunião de Meio de Semana' },
@@ -104,7 +94,6 @@ const CONFIGURACOES_PADRAO = {
     { id: 'limpeza', label: 'Limpeza' },
   ],
   
-  // Dias da semana
   diasSemana: [
     { id: 'segunda', label: 'Segunda-feira', abrev: 'Seg' },
     { id: 'terca', label: 'Terça-feira', abrev: 'Ter' },
@@ -115,10 +104,6 @@ const CONFIGURACOES_PADRAO = {
     { id: 'domingo', label: 'Domingo', abrev: 'Dom' },
   ],
   
-  // ============================================
-  // CONFIGURAÇÕES DE QUANTIDADES
-  // ============================================
-  
   quantidades: {
     microfones: 2,
     indicadores: 2,
@@ -128,10 +113,6 @@ const CONFIGURACOES_PADRAO = {
     designacoesVideo: 1,
     gruposLimpeza: 1,
   },
-  
-  // ============================================
-  // CONFIGURAÇÕES DE REUNIÕES
-  // ============================================
   
   fimSemana: {
     ativarHospitalidade: false,
@@ -208,15 +189,7 @@ const CONFIGURACOES_PADRAO = {
     bloquearDesignacoesAutomaticas: true,
     mostrarAusentesNaEscala: true,
     tiposAusenciaPermitidos: ['periodo', 'dias_especificos', 'recorrente'],
-    motivosPreDefinidos: [
-      'Viagem',
-      'Doença',
-      'Trabalho',
-      'Consulta médica',
-      'Estudos',
-      'Compromisso familiar',
-      'Outro'
-    ]
+    motivosPreDefinidos: ['Viagem', 'Doença', 'Trabalho', 'Consulta médica', 'Estudos', 'Compromisso familiar', 'Outro']
   },
   
   designacoes: {
@@ -257,76 +230,56 @@ const CONFIGURACOES_PADRAO = {
     diaFimSemana: 'domingo',
     horaInicioFimSemana: '10:00',
     horaFimFimSemana: '12:00',
-    horariosTestemunhoPublico: [
-      { dia: 'sabado', horaInicio: '15:00', horaFim: '17:00' }
-    ]
+    horariosTestemunhoPublico: [{ dia: 'sabado', horaInicio: '15:00', horaFim: '17:00' }]
   },
   
   permissoes: {
-    anciãos: {
-      editarDesignacoes: true,
-      editarAusencias: true,
-      verRelatorios: true,
-      exportarDados: true
-    },
-    servosMinisteriais: {
-      editarDesignacoes: true,
-      editarAusencias: false,
-      verRelatorios: true,
-      exportarDados: false
-    },
-    publicadores: {
-      verPropriaEscala: true,
-      editarPropriaDisponibilidade: true,
-      verOutrasEscalas: false
-    }
+    anciãos: { editarDesignacoes: true, editarAusencias: true, verRelatorios: true, exportarDados: true },
+    servosMinisteriais: { editarDesignacoes: true, editarAusencias: false, verRelatorios: true, exportarDados: false },
+    publicadores: { verPropriaEscala: true, editarPropriaDisponibilidade: true, verOutrasEscalas: false }
   }
 }
 
-// Função para gerar tipos A/V dinâmicos baseados nas quantidades
+// ============================================
+// FUNÇÕES AUXILIARES
+// ============================================
+
 function gerarTiposAVDinamicos(config: any) {
   const tipos: any[] = []
   const quantidades = config?.quantidades || CONFIGURACOES_PADRAO.quantidades
   const etiquetas = config?.avIndicadores || CONFIGURACOES_PADRAO.avIndicadores
   
-  // Sempre adicionar Som e Video
   tipos.push({ id: 'som', label: 'Som', icon: '🔊', ordem: 1 })
   tipos.push({ id: 'video', label: 'Vídeo', icon: '🎬', ordem: 2 })
   
-  // Microfones
   const numMics = quantidades.microfones || 2
   const etiquetasMic = etiquetas.etiquetasMicrofone || []
   for (let i = 1; i <= numMics; i++) {
-    const etiqueta = etiquetasMic[i - 1]
     tipos.push({
       id: `microfone_${i}`,
-      label: etiqueta?.label || `Microfone ${i}`,
+      label: etiquetasMic[i - 1]?.label || `Microfone ${i}`,
       icon: '🎙️',
       ordem: 2 + i
     })
   }
   
-  // Indicadores
   const numIndicadores = quantidades.indicadores || 2
   const etiquetasInd = etiquetas.etiquetasIndicador || []
   for (let i = 1; i <= numIndicadores; i++) {
-    const etiqueta = etiquetasInd[i - 1]
     tipos.push({
       id: `indicador_${i}`,
-      label: etiqueta?.label || `Indicador ${i}`,
+      label: etiquetasInd[i - 1]?.label || `Indicador ${i}`,
       icon: '👆',
       ordem: 2 + numMics + i
     })
   }
   
-  // Plataforma e Zoom
   tipos.push({ id: 'plataforma', label: 'Plataforma', icon: '🏛️', ordem: 100 })
   tipos.push({ id: 'zoom', label: 'Assistente Zoom', icon: '💻', ordem: 101 })
   
   return tipos
 }
 
-// Função para gerar tipos de limpeza dinâmicos
 function gerarTiposLimpezaDinamicos(config: any) {
   const tipos: any[] = []
   const numGrupos = config?.quantidades?.gruposLimpeza || config?.limpeza?.numeroGruposLimpeza || 1
@@ -334,10 +287,9 @@ function gerarTiposLimpezaDinamicos(config: any) {
   const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
   
   for (let i = 0; i < numGrupos; i++) {
-    const etiqueta = etiquetas[i]
     tipos.push({
       id: `grupo_limpeza_${letras[i].toLowerCase()}`,
-      label: etiqueta?.label || `Grupo ${letras[i]}`,
+      label: etiquetas[i]?.label || `Grupo ${letras[i]}`,
       icon: '🧹',
       ordem: i + 1
     })
@@ -350,29 +302,21 @@ function gerarTiposLimpezaDinamicos(config: any) {
 // ROTAS
 // ============================================
 
-// Obter TODAS as configurações (tipos dinâmicos + configurações)
+// Obter TODAS as configurações
 router.get('/', async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     let config = await db.collection('config-programacao').findOne({})
     
     if (!config) {
-      // Criar configurações padrão se não existir
-      const defaultConfig = {
-        ...CONFIGURACOES_PADRAO,
-        atualizadoEm: new Date(),
-        atualizadoPor: 'sistema'
-      }
-      
+      const defaultConfig = { ...CONFIGURACOES_PADRAO, atualizadoEm: new Date(), atualizadoPor: 'sistema' }
       await db.collection('config-programacao').insertOne(defaultConfig)
       config = defaultConfig
     }
     
-    // Gerar tipos dinâmicos
     const tiposAV = gerarTiposAVDinamicos(config)
     const tiposLimpeza = gerarTiposLimpezaDinamicos(config)
     
-    // Montar resposta completa
     const resposta = {
       ...config,
       tiposDesignacao: {
@@ -382,7 +326,6 @@ router.get('/', async (req: Request, res: Response) => {
         limpeza: tiposLimpeza,
         testemunhoPublico: CONFIGURACOES_PADRAO.tiposDesignacao.testemunhoPublico,
       },
-      // Incluir todos os arrays de tipos
       categorias: CONFIGURACOES_PADRAO.categorias,
       statusDesignacao: CONFIGURACOES_PADRAO.statusDesignacao,
       tiposAusencia: CONFIGURACOES_PADRAO.tiposAusencia,
@@ -392,26 +335,23 @@ router.get('/', async (req: Request, res: Response) => {
 
     res.json({ config: resposta })
   } catch (error: any) {
-    console.error('Error getting config-programacao:', error)
+    console.error('Error getting config:', error)
     res.status(500).json({ error: error.message })
   }
 })
 
-// Obter apenas os tipos de designação (para uso rápido)
+// Obter apenas os tipos (endpoint rápido)
 router.get('/tipos', async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})
     
-    const tiposAV = gerarTiposAVDinamicos(config)
-    const tiposLimpeza = gerarTiposLimpezaDinamicos(config)
-    
     res.json({
       tiposDesignacao: {
         fimSemana: CONFIGURACOES_PADRAO.tiposDesignacao.fimSemana,
         meioSemana: CONFIGURACOES_PADRAO.tiposDesignacao.meioSemana,
-        avIndicadores: tiposAV,
-        limpeza: tiposLimpeza,
+        avIndicadores: gerarTiposAVDinamicos(config),
+        limpeza: gerarTiposLimpezaDinamicos(config),
         testemunhoPublico: CONFIGURACOES_PADRAO.tiposDesignacao.testemunhoPublico,
       },
       categorias: CONFIGURACOES_PADRAO.categorias,
@@ -426,203 +366,123 @@ router.get('/tipos', async (req: Request, res: Response) => {
   }
 })
 
-// Obter configuração específica por seção
+// Obter seção específica
 router.get('/secao/:secao', async (req: Request, res: Response) => {
   try {
     const { secao } = req.params
     const db = await getDb()
-    
     const config = await db.collection('config-programacao').findOne({})
     
     if (!config) {
       const secaoPadrao = CONFIGURACOES_PADRAO[secao as keyof typeof CONFIGURACOES_PADRAO]
-      if (!secaoPadrao) {
-        return res.status(404).json({ error: 'Seção não encontrada' })
-      }
-      return res.json({ config: secaoPadrao })
+      return secaoPadrao ? res.json({ config: secaoPadrao }) : res.status(404).json({ error: 'Seção não encontrada' })
     }
     
     const secaoData = config[secao]
-    if (!secaoData) {
-      return res.status(404).json({ error: 'Seção não encontrada' })
-    }
-    
-    res.json({ config: secaoData })
+    return secaoData ? res.json({ config: secaoData }) : res.status(404).json({ error: 'Seção não encontrada' })
   } catch (error: any) {
-    console.error('Error getting config section:', error)
     res.status(500).json({ error: error.message })
   }
 })
 
-// Salvar configurações de programação (completo)
+// Salvar configurações
 router.post('/', async (req: Request, res: Response) => {
   try {
     const db = await getDb()
-    const data = req.body
-
-    // Remover campos que não devem ser atualizados
-    const { _id, ...dataWithoutId } = data
-
+    const { _id, ...dataWithoutId } = req.body
     const existing = await db.collection('config-programacao').findOne({})
 
     if (existing) {
-      await db.collection('config-programacao').updateOne(
-        {},
-        { 
-          $set: { 
-            ...dataWithoutId,
-            atualizadoEm: new Date(),
-            atualizadoPor: dataWithoutId.atualizadoPor || 'usuario'
-          } 
-        }
-      )
+      await db.collection('config-programacao').updateOne({}, { $set: { ...dataWithoutId, atualizadoEm: new Date(), atualizadoPor: dataWithoutId.atualizadoPor || 'usuario' } })
     } else {
-      await db.collection('config-programacao').insertOne({
-        ...dataWithoutId,
-        atualizadoEm: new Date(),
-        atualizadoPor: dataWithoutId.atualizadoPor || 'usuario'
-      })
+      await db.collection('config-programacao').insertOne({ ...dataWithoutId, atualizadoEm: new Date(), atualizadoPor: dataWithoutId.atualizadoPor || 'usuario' })
     }
 
-    const updated = await db.collection('config-programacao').findOne({})
-    res.json({ config: updated })
+    res.json({ config: await db.collection('config-programacao').findOne({}) })
   } catch (error: any) {
-    console.error('Error saving config-programacao:', error)
     res.status(500).json({ error: error.message })
   }
 })
 
-// Atualizar seção específica
+// Atualizar seção
 router.put('/secao/:secao', async (req: Request, res: Response) => {
   try {
     const { secao } = req.params
-    const data = req.body
     const db = await getDb()
-
     const existing = await db.collection('config-programacao').findOne({})
 
     if (!existing) {
-      const newConfig = {
-        ...CONFIGURACOES_PADRAO,
-        [secao]: data,
-        atualizadoEm: new Date(),
-        atualizadoPor: 'usuario'
-      }
-      await db.collection('config-programacao').insertOne(newConfig)
+      await db.collection('config-programacao').insertOne({ ...CONFIGURACOES_PADRAO, [secao]: req.body, atualizadoEm: new Date(), atualizadoPor: 'usuario' })
     } else {
-      await db.collection('config-programacao').updateOne(
-        {},
-        { 
-          $set: { 
-            [secao]: data,
-            atualizadoEm: new Date(),
-            atualizadoPor: 'usuario'
-          } 
-        }
-      )
+      await db.collection('config-programacao').updateOne({}, { $set: { [secao]: req.body, atualizadoEm: new Date(), atualizadoPor: 'usuario' } })
     }
 
-    const updated = await db.collection('config-programacao').findOne({})
-    res.json({ config: updated })
+    res.json({ config: await db.collection('config-programacao').findOne({}) })
   } catch (error: any) {
-    console.error('Error updating config section:', error)
     res.status(500).json({ error: error.message })
   }
 })
 
-// Resetar para configurações padrão
+// Reset
 router.post('/reset', async (req: Request, res: Response) => {
   try {
     const db = await getDb()
-    
-    const defaultConfig = {
-      ...CONFIGURACOES_PADRAO,
-      atualizadoEm: new Date(),
-      atualizadoPor: 'sistema'
-    }
-    
+    const defaultConfig = { ...CONFIGURACOES_PADRAO, atualizadoEm: new Date(), atualizadoPor: 'sistema' }
     await db.collection('config-programacao').deleteMany({})
     await db.collection('config-programacao').insertOne(defaultConfig)
-    
-    res.json({ 
-      message: 'Configurações resetadas com sucesso',
-      config: defaultConfig 
-    })
+    res.json({ message: 'Configurações resetadas', config: defaultConfig })
   } catch (error: any) {
-    console.error('Error resetting config-programacao:', error)
     res.status(500).json({ error: error.message })
   }
 })
 
-// Obter lista de grupos de limpeza
-router.get('/grupos-limpeza', async (req: Request, res: Response) => {
-  try {
-    const db = await getDb()
-    const config = await db.collection('config-programacao').findOne({})
-    
-    const tipos = gerarTiposLimpezaDinamicos(config)
-    
-    res.json({ grupos: tipos })
-  } catch (error: any) {
-    console.error('Error getting grupos limpeza:', error)
-    res.status(500).json({ error: error.message })
-  }
-})
-
-// Obter configuração de microfones
+// Microfones
 router.get('/microfones', async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})
-    
     const quantidades = config?.quantidades || CONFIGURACOES_PADRAO.quantidades
     const etiquetas = config?.avIndicadores?.etiquetasMicrofone || CONFIGURACOES_PADRAO.avIndicadores.etiquetasMicrofone
+    const num = quantidades.microfones || 2
     
-    const numeroMicrofones = quantidades.microfones || 2
-    
-    const microfones = []
-    for (let i = 1; i <= numeroMicrofones; i++) {
-      const etiqueta = etiquetas[i - 1]
-      microfones.push({
-        id: `microfone_${i}`,
-        tipo: `microfone_${i}`,
-        nome: etiqueta?.label || `Microfone ${i}`,
-        etiqueta: etiqueta?.label
-      })
-    }
-    
-    res.json({ microfones })
+    res.json({ microfones: Array.from({ length: num }, (_, i) => ({
+      id: `microfone_${i + 1}`,
+      tipo: `microfone_${i + 1}`,
+      nome: etiquetas[i]?.label || `Microfone ${i + 1}`,
+      etiqueta: etiquetas[i]?.label
+    }))})
   } catch (error: any) {
-    console.error('Error getting microfones config:', error)
     res.status(500).json({ error: error.message })
   }
 })
 
-// Obter configuração de indicadores
+// Indicadores
 router.get('/indicadores', async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})
-    
     const quantidades = config?.quantidades || CONFIGURACOES_PADRAO.quantidades
     const etiquetas = config?.avIndicadores?.etiquetasIndicador || CONFIGURACOES_PADRAO.avIndicadores.etiquetasIndicador
+    const num = quantidades.indicadores || 2
     
-    const numeroIndicadores = quantidades.indicadores || 2
-    
-    const indicadores = []
-    for (let i = 1; i <= numeroIndicadores; i++) {
-      const etiqueta = etiquetas[i - 1]
-      indicadores.push({
-        id: `indicador_${i}`,
-        tipo: `indicador_${i}`,
-        nome: etiqueta?.label || `Indicador ${i}`,
-        etiqueta: etiqueta?.label
-      })
-    }
-    
-    res.json({ indicadores })
+    res.json({ indicadores: Array.from({ length: num }, (_, i) => ({
+      id: `indicador_${i + 1}`,
+      tipo: `indicador_${i + 1}`,
+      nome: etiquetas[i]?.label || `Indicador ${i + 1}`,
+      etiqueta: etiquetas[i]?.label
+    }))})
   } catch (error: any) {
-    console.error('Error getting indicadores config:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Grupos limpeza
+router.get('/grupos-limpeza', async (req: Request, res: Response) => {
+  try {
+    const db = await getDb()
+    const config = await db.collection('config-programacao').findOne({})
+    res.json({ grupos: gerarTiposLimpezaDinamicos(config) })
+  } catch (error: any) {
     res.status(500).json({ error: error.message })
   }
 })
