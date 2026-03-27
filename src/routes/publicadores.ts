@@ -99,8 +99,11 @@ router.put('/:id', async (req: Request, res: Response) => {
     const db = await getDb()
     const data = req.body
 
+    // Remover campos imutáveis que não devem ser atualizados
+    const { _id, id: bodyId, createdAt, ...safeData } = data
+
     const updateData: any = {
-      ...data,
+      ...safeData,
       updatedAt: new Date()
     }
 
