@@ -4,11 +4,134 @@ import { ObjectId } from 'mongodb'
 
 const router = Router()
 
-// Configurações padrão
+// Configurações padrão completas
 const CONFIGURACOES_PADRAO = {
   id: 'default',
   nome: 'Configurações Padrão',
-  versao: '2.0.0',
+  versao: '3.0.0',
+  
+  // ============================================
+  // TIPOS DE DESIGNAÇÃO - TOTALMENTE CONFIGURÁVEL
+  // ============================================
+  
+  tiposDesignacao: {
+    // Fim de Semana
+    fimSemana: [
+      { id: 'presidente', label: 'Presidente', icon: '👤', requerAnciao: true, ordem: 1 },
+      { id: 'oracao_inicial', label: 'Oração Inicial', icon: '🙏', requerAnciao: true, ordem: 2 },
+      { id: 'dirigente_sentinela', label: 'Dirigente da Sentinela', icon: '📖', requerAnciao: true, ordem: 3 },
+      { id: 'leitor_sentinela', label: 'Leitor da Sentinela', icon: '📚', requerAnciao: false, ordem: 4 },
+      { id: 'interprete', label: 'Intérprete', icon: '🗣️', requerAnciao: false, ordem: 5 },
+      { id: 'orador', label: 'Orador', icon: '🎤', requerAnciao: true, ordem: 6 },
+      { id: 'hospitalidade', label: 'Hospitalidade', icon: '🏠', requerAnciao: false, ordem: 7 },
+      { id: 'oracao_final', label: 'Oração Final', icon: '🙏', requerAnciao: true, ordem: 8 },
+    ],
+    
+    // Meio de Semana
+    meioSemana: [
+      { id: 'presidente', label: 'Presidente', icon: '👤', requerAnciao: true, requerServo: false, ordem: 1 },
+      { id: 'presidente_auxiliar', label: 'Conselheiro Auxiliar', icon: '👥', requerAnciao: true, requerServo: true, ordem: 2 },
+      { id: 'oracao_inicial', label: 'Oração Inicial', icon: '🙏', requerAnciao: true, requerServo: false, ordem: 3 },
+      { id: 'tesouros', label: 'Tesouros da Palavra de Deus', icon: '💎', requerAnciao: true, requerServo: true, ordem: 4 },
+      { id: 'perolas_espirituais', label: 'Pérolas Espirituais', icon: '✨', requerAnciao: true, requerServo: true, ordem: 5 },
+      { id: 'leitura_biblia', label: 'Leitura da Bíblia', icon: '📖', requerAnciao: false, requerServo: false, ordem: 6 },
+      { id: 'ministerio_iniciar', label: 'Iniciar Conversas', icon: '💬', requerAnciao: false, requerServo: false, ordem: 7 },
+      { id: 'ministerio_cultivar', label: 'Cultivar Interesse', icon: '🌱', requerAnciao: false, requerServo: false, ordem: 8 },
+      { id: 'ministerio_discipulos', label: 'Fazer Discípulos', icon: '👨‍🏫', requerAnciao: false, requerServo: false, ordem: 9 },
+      { id: 'estudo_biblico', label: 'Estudo Bíblico de Congregação', icon: '📚', requerAnciao: true, requerServo: true, ordem: 10 },
+      { id: 'leitor_ebc', label: 'Leitor (EBC)', icon: '📖', requerAnciao: false, requerServo: true, ordem: 11 },
+      { id: 'orador_servico', label: 'Discurso de Serviço', icon: '🎤', requerAnciao: true, requerServo: true, ordem: 12 },
+      { id: 'oracao_final', label: 'Oração Final', icon: '🙏', requerAnciao: true, requerServo: false, ordem: 13 },
+    ],
+    
+    // A/V e Indicadores - VAZIO, será gerado dinamicamente
+    avIndicadores: [],
+    
+    // Limpeza - VAZIO, será gerado dinamicamente
+    limpeza: [],
+    
+    // Testemunho Público
+    testemunhoPublico: [
+      { id: 'testemunho_sabado_manha', label: 'Testemunho Sábado Manhã', icon: '📢', ordem: 1 },
+      { id: 'testemunho_sabado_tarde', label: 'Testemunho Sábado Tarde', icon: '📢', ordem: 2 },
+      { id: 'testemunho_domingo_manha', label: 'Testemunho Domingo Manhã', icon: '📢', ordem: 3 },
+      { id: 'testemunho_domingo_tarde', label: 'Testemunho Domingo Tarde', icon: '📢', ordem: 4 },
+    ],
+  },
+  
+  // Categorias de designação
+  categorias: [
+    { id: 'fim_semana', label: 'Reunião de Fim de Semana', icon: '📅', cor: '#1976d2' },
+    { id: 'meio_semana', label: 'Reunião de Meio de Semana', icon: '📆', cor: '#2196f3' },
+    { id: 'av_indicadores', label: 'A/V e Indicadores', icon: '🎬', cor: '#9c27b0' },
+    { id: 'limpeza', label: 'Limpeza', icon: '🧹', cor: '#795548' },
+    { id: 'testemunho_publico', label: 'Testemunho Público', icon: '📢', cor: '#4caf50' },
+    { id: 'hospitalidade', label: 'Hospitalidade', icon: '🏠', cor: '#ff9800' },
+    { id: 'oradores', label: 'Oradores', icon: '🎤', cor: '#e91e63' },
+  ],
+  
+  // Status de designação
+  statusDesignacao: [
+    { id: 'pendente', label: 'Pendente', cor: '#757575', icon: '⏳' },
+    { id: 'agendado', label: 'Agendado', cor: '#2196f3', icon: '📅' },
+    { id: 'confirmado', label: 'Confirmado', cor: '#4caf50', icon: '✅' },
+    { id: 'realizado', label: 'Realizado', cor: '#00bcd4', icon: '✓' },
+    { id: 'cancelado', label: 'Cancelado', cor: '#f44336', icon: '❌' },
+    { id: 'substituido', label: 'Substituído', cor: '#9c27b0', icon: '🔄' },
+    { id: 'ausente', label: 'Ausente', cor: '#ff9800', icon: '🚫' },
+  ],
+  
+  // Tipos de ausência
+  tiposAusencia: [
+    { id: 'periodo', label: 'Período (contínuo)', icon: '📅' },
+    { id: 'dias_especificos', label: 'Dias Específicos', icon: '📆' },
+    { id: 'recorrente', label: 'Recorrente', icon: '🔄' },
+  ],
+  
+  // Tipos de designação para ausência
+  tiposDesignacaoAusencia: [
+    { id: 'todas', label: 'Todas as designações' },
+    { id: 'reuniao_meio_semana', label: 'Reunião de Meio de Semana' },
+    { id: 'reuniao_fim_semana', label: 'Reunião de Fim de Semana' },
+    { id: 'testemunho_publico', label: 'Testemunho Público' },
+    { id: 'presidente', label: 'Presidente' },
+    { id: 'oracao', label: 'Oração' },
+    { id: 'leitor', label: 'Leitor' },
+    { id: 'indicador', label: 'Indicador' },
+    { id: 'microfone', label: 'Microfone' },
+    { id: 'som', label: 'Som' },
+    { id: 'plataforma', label: 'Plataforma' },
+    { id: 'limpeza', label: 'Limpeza' },
+  ],
+  
+  // Dias da semana
+  diasSemana: [
+    { id: 'segunda', label: 'Segunda-feira', abrev: 'Seg' },
+    { id: 'terca', label: 'Terça-feira', abrev: 'Ter' },
+    { id: 'quarta', label: 'Quarta-feira', abrev: 'Qua' },
+    { id: 'quinta', label: 'Quinta-feira', abrev: 'Qui' },
+    { id: 'sexta', label: 'Sexta-feira', abrev: 'Sex' },
+    { id: 'sabado', label: 'Sábado', abrev: 'Sáb' },
+    { id: 'domingo', label: 'Domingo', abrev: 'Dom' },
+  ],
+  
+  // ============================================
+  // CONFIGURAÇÕES DE QUANTIDADES
+  // ============================================
+  
+  quantidades: {
+    microfones: 2,
+    indicadores: 2,
+    assistentesZoom: 0,
+    designacoesPalco: 0,
+    designacoesSom: 1,
+    designacoesVideo: 1,
+    gruposLimpeza: 1,
+  },
+  
+  // ============================================
+  // CONFIGURAÇÕES DE REUNIÕES
+  // ============================================
   
   fimSemana: {
     ativarHospitalidade: false,
@@ -160,7 +283,74 @@ const CONFIGURACOES_PADRAO = {
   }
 }
 
-// Obter configurações de programação
+// Função para gerar tipos A/V dinâmicos baseados nas quantidades
+function gerarTiposAVDinamicos(config: any) {
+  const tipos: any[] = []
+  const quantidades = config?.quantidades || CONFIGURACOES_PADRAO.quantidades
+  const etiquetas = config?.avIndicadores || CONFIGURACOES_PADRAO.avIndicadores
+  
+  // Sempre adicionar Som e Video
+  tipos.push({ id: 'som', label: 'Som', icon: '🔊', ordem: 1 })
+  tipos.push({ id: 'video', label: 'Vídeo', icon: '🎬', ordem: 2 })
+  
+  // Microfones
+  const numMics = quantidades.microfones || 2
+  const etiquetasMic = etiquetas.etiquetasMicrofone || []
+  for (let i = 1; i <= numMics; i++) {
+    const etiqueta = etiquetasMic[i - 1]
+    tipos.push({
+      id: `microfone_${i}`,
+      label: etiqueta?.label || `Microfone ${i}`,
+      icon: '🎙️',
+      ordem: 2 + i
+    })
+  }
+  
+  // Indicadores
+  const numIndicadores = quantidades.indicadores || 2
+  const etiquetasInd = etiquetas.etiquetasIndicador || []
+  for (let i = 1; i <= numIndicadores; i++) {
+    const etiqueta = etiquetasInd[i - 1]
+    tipos.push({
+      id: `indicador_${i}`,
+      label: etiqueta?.label || `Indicador ${i}`,
+      icon: '👆',
+      ordem: 2 + numMics + i
+    })
+  }
+  
+  // Plataforma e Zoom
+  tipos.push({ id: 'plataforma', label: 'Plataforma', icon: '🏛️', ordem: 100 })
+  tipos.push({ id: 'zoom', label: 'Assistente Zoom', icon: '💻', ordem: 101 })
+  
+  return tipos
+}
+
+// Função para gerar tipos de limpeza dinâmicos
+function gerarTiposLimpezaDinamicos(config: any) {
+  const tipos: any[] = []
+  const numGrupos = config?.quantidades?.gruposLimpeza || config?.limpeza?.numeroGruposLimpeza || 1
+  const etiquetas = config?.limpeza?.etiquetasLimpeza || []
+  const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+  
+  for (let i = 0; i < numGrupos; i++) {
+    const etiqueta = etiquetas[i]
+    tipos.push({
+      id: `grupo_limpeza_${letras[i].toLowerCase()}`,
+      label: etiqueta?.label || `Grupo ${letras[i]}`,
+      icon: '🧹',
+      ordem: i + 1
+    })
+  }
+  
+  return tipos
+}
+
+// ============================================
+// ROTAS
+// ============================================
+
+// Obter TODAS as configurações (tipos dinâmicos + configurações)
 router.get('/', async (req: Request, res: Response) => {
   try {
     const db = await getDb()
@@ -177,10 +367,61 @@ router.get('/', async (req: Request, res: Response) => {
       await db.collection('config-programacao').insertOne(defaultConfig)
       config = defaultConfig
     }
+    
+    // Gerar tipos dinâmicos
+    const tiposAV = gerarTiposAVDinamicos(config)
+    const tiposLimpeza = gerarTiposLimpezaDinamicos(config)
+    
+    // Montar resposta completa
+    const resposta = {
+      ...config,
+      tiposDesignacao: {
+        fimSemana: CONFIGURACOES_PADRAO.tiposDesignacao.fimSemana,
+        meioSemana: CONFIGURACOES_PADRAO.tiposDesignacao.meioSemana,
+        avIndicadores: tiposAV,
+        limpeza: tiposLimpeza,
+        testemunhoPublico: CONFIGURACOES_PADRAO.tiposDesignacao.testemunhoPublico,
+      },
+      // Incluir todos os arrays de tipos
+      categorias: CONFIGURACOES_PADRAO.categorias,
+      statusDesignacao: CONFIGURACOES_PADRAO.statusDesignacao,
+      tiposAusencia: CONFIGURACOES_PADRAO.tiposAusencia,
+      tiposDesignacaoAusencia: CONFIGURACOES_PADRAO.tiposDesignacaoAusencia,
+      diasSemana: CONFIGURACOES_PADRAO.diasSemana,
+    }
 
-    res.json({ config })
+    res.json({ config: resposta })
   } catch (error: any) {
     console.error('Error getting config-programacao:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Obter apenas os tipos de designação (para uso rápido)
+router.get('/tipos', async (req: Request, res: Response) => {
+  try {
+    const db = await getDb()
+    const config = await db.collection('config-programacao').findOne({})
+    
+    const tiposAV = gerarTiposAVDinamicos(config)
+    const tiposLimpeza = gerarTiposLimpezaDinamicos(config)
+    
+    res.json({
+      tiposDesignacao: {
+        fimSemana: CONFIGURACOES_PADRAO.tiposDesignacao.fimSemana,
+        meioSemana: CONFIGURACOES_PADRAO.tiposDesignacao.meioSemana,
+        avIndicadores: tiposAV,
+        limpeza: tiposLimpeza,
+        testemunhoPublico: CONFIGURACOES_PADRAO.tiposDesignacao.testemunhoPublico,
+      },
+      categorias: CONFIGURACOES_PADRAO.categorias,
+      statusDesignacao: CONFIGURACOES_PADRAO.statusDesignacao,
+      tiposAusencia: CONFIGURACOES_PADRAO.tiposAusencia,
+      tiposDesignacaoAusencia: CONFIGURACOES_PADRAO.tiposDesignacaoAusencia,
+      diasSemana: CONFIGURACOES_PADRAO.diasSemana,
+    })
+  } catch (error: any) {
+    console.error('Error getting tipos:', error)
     res.status(500).json({ error: error.message })
   }
 })
@@ -194,7 +435,6 @@ router.get('/secao/:secao', async (req: Request, res: Response) => {
     const config = await db.collection('config-programacao').findOne({})
     
     if (!config) {
-      // Retornar padrão da seção
       const secaoPadrao = CONFIGURACOES_PADRAO[secao as keyof typeof CONFIGURACOES_PADRAO]
       if (!secaoPadrao) {
         return res.status(404).json({ error: 'Seção não encontrada' })
@@ -259,15 +499,9 @@ router.put('/secao/:secao', async (req: Request, res: Response) => {
     const data = req.body
     const db = await getDb()
 
-    // Verificar se a seção é válida
-    if (!CONFIGURACOES_PADRAO[secao as keyof typeof CONFIGURACOES_PADRAO]) {
-      return res.status(400).json({ error: 'Seção inválida' })
-    }
-
     const existing = await db.collection('config-programacao').findOne({})
 
     if (!existing) {
-      // Criar configuração completa com a seção atualizada
       const newConfig = {
         ...CONFIGURACOES_PADRAO,
         [secao]: data,
@@ -276,7 +510,6 @@ router.put('/secao/:secao', async (req: Request, res: Response) => {
       }
       await db.collection('config-programacao').insertOne(newConfig)
     } else {
-      // Atualizar apenas a seção
       await db.collection('config-programacao').updateOne(
         {},
         { 
@@ -321,27 +554,15 @@ router.post('/reset', async (req: Request, res: Response) => {
   }
 })
 
-// Obter lista de grupos de limpeza baseado na configuração
+// Obter lista de grupos de limpeza
 router.get('/grupos-limpeza', async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})
     
-    const numeroGrupos = config?.limpeza?.numeroGruposLimpeza || 1
-    const etiquetas = config?.limpeza?.etiquetasLimpeza || CONFIGURACOES_PADRAO.limpeza.etiquetasLimpeza
+    const tipos = gerarTiposLimpezaDinamicos(config)
     
-    const grupos = []
-    const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
-    
-    for (let i = 0; i < numeroGrupos; i++) {
-      grupos.push({
-        id: `grupo_limpeza_${letras[i].toLowerCase()}`,
-        nome: `Grupo ${letras[i]}`,
-        etiqueta: etiquetas[i]?.label || `Grupo ${letras[i]}`
-      })
-    }
-    
-    res.json({ grupos })
+    res.json({ grupos: tipos })
   } catch (error: any) {
     console.error('Error getting grupos limpeza:', error)
     res.status(500).json({ error: error.message })
@@ -354,15 +575,17 @@ router.get('/microfones', async (req: Request, res: Response) => {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})
     
-    const numeroMicrofones = config?.avIndicadores?.numeroMicrofones || 2
+    const quantidades = config?.quantidades || CONFIGURACOES_PADRAO.quantidades
     const etiquetas = config?.avIndicadores?.etiquetasMicrofone || CONFIGURACOES_PADRAO.avIndicadores.etiquetasMicrofone
+    
+    const numeroMicrofones = quantidades.microfones || 2
     
     const microfones = []
     for (let i = 1; i <= numeroMicrofones; i++) {
       const etiqueta = etiquetas[i - 1]
       microfones.push({
         id: `microfone_${i}`,
-        tipo: `microfone_${i}` as any,
+        tipo: `microfone_${i}`,
         nome: etiqueta?.label || `Microfone ${i}`,
         etiqueta: etiqueta?.label
       })
@@ -381,15 +604,17 @@ router.get('/indicadores', async (req: Request, res: Response) => {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})
     
-    const numeroIndicadores = config?.avIndicadores?.numeroIndicadores || 2
+    const quantidades = config?.quantidades || CONFIGURACOES_PADRAO.quantidades
     const etiquetas = config?.avIndicadores?.etiquetasIndicador || CONFIGURACOES_PADRAO.avIndicadores.etiquetasIndicador
+    
+    const numeroIndicadores = quantidades.indicadores || 2
     
     const indicadores = []
     for (let i = 1; i <= numeroIndicadores; i++) {
       const etiqueta = etiquetas[i - 1]
       indicadores.push({
         id: `indicador_${i}`,
-        tipo: `indicador_${i}` as any,
+        tipo: `indicador_${i}`,
         nome: etiqueta?.label || `Indicador ${i}`,
         etiqueta: etiqueta?.label
       })
