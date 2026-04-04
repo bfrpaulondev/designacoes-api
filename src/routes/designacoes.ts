@@ -42,7 +42,7 @@ router.get('/', authorize('designacoes', 'read'), async (req: Request, res: Resp
 })
 
 // Obter designações por semana
-router.get('/semana/:semanaId', async (req: Request, res: Response) => {
+router.get('/semana/:semanaId', authorize('designacoes', 'read'), async (req: Request, res: Response) => {
   try {
     const { semanaId } = req.params
     const db = await getDb()
@@ -60,7 +60,7 @@ router.get('/semana/:semanaId', async (req: Request, res: Response) => {
 })
 
 // Obter designações por publicador
-router.get('/publicador/:publicadorId', async (req: Request, res: Response) => {
+router.get('/publicador/:publicadorId', authorize('designacoes', 'read'), async (req: Request, res: Response) => {
   try {
     const { publicadorId } = req.params
     const db = await getDb()
@@ -78,7 +78,7 @@ router.get('/publicador/:publicadorId', async (req: Request, res: Response) => {
 })
 
 // Obter uma designação por ID
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', authorize('designacoes', 'read'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()
@@ -103,7 +103,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 })
 
 // Obter sugestões de designação para uma data/tipo
-router.post('/sugestoes', async (req: Request, res: Response) => {
+router.post('/sugestoes', authorize('designacoes', 'read'), async (req: Request, res: Response) => {
   try {
     const { data, tipo, categoria } = req.body
     
@@ -434,21 +434,24 @@ router.put('/:id', authorize('designacoes', 'update'), async (req: Request, res:
     const db = await getDb()
     const data = req.body
 
+    // Remover campos imutáveis que não devem ser atualizados
+    const { _id, id: bodyId, criadoEm, ...safeData } = data
+
     const updateData: any = {
-      ...data,
+      ...safeData,
       atualizadoEm: new Date()
     }
 
     // Se atualizou o publicador, buscar o nome
-    if (data.publicadorId) {
-      const publicador = await db.collection('publicadores').findOne({ id: data.publicadorId })
+    if (safeData.publicadorId) {
+      const publicador = await db.collection('publicadores').findOne({ id: safeData.publicadorId })
       if (publicador) {
         updateData.publicadorNome = publicador.nome || publicador.nomeCompleto
       }
     }
 
     // Se confirmou, registrar data
-    if (data.status === 'confirmado' && !data.confirmadoEm) {
+    if (safeData.status === 'confirmado' && !safeData.confirmadoEm) {
       updateData.confirmadoEm = new Date()
     }
 
@@ -470,7 +473,7 @@ router.put('/:id', authorize('designacoes', 'update'), async (req: Request, res:
 })
 
 // Confirmar designação
-router.post('/:id/confirmar', async (req: Request, res: Response) => {
+router.post('/:id/confirmar', authorize('designacoes', 'update'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()
@@ -499,7 +502,7 @@ router.post('/:id/confirmar', async (req: Request, res: Response) => {
 })
 
 // Substituir designação
-router.post('/:id/substituir', async (req: Request, res: Response) => {
+router.post('/:id/substituir', authorize('designacoes', 'update'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { novoPublicadorId, motivo } = req.body
@@ -585,7 +588,7 @@ router.delete('/:id', authorize('designacoes', 'delete'), async (req: Request, r
 })
 
 // Estatísticas de designações
-router.get('/estatisticas/resumo', async (req: Request, res: Response) => {
+router.get('/estatisticas/resumo', authorize('designacoes', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     

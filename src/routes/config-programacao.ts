@@ -1,8 +1,12 @@
 import { Router, Request, Response } from 'express'
 import { getDb } from '../db.js'
 import { ObjectId } from 'mongodb'
+import { authenticate, authorize } from '../middleware/auth.js'
 
 const router = Router()
+
+// Aplicar autenticação em todas as rotas
+router.use(authenticate)
 
 // ============================================
 // CONFIGURAÇÕES PADRÃO COMPLETAS
@@ -304,7 +308,7 @@ function gerarTiposLimpezaDinamicos(config: any) {
 // ============================================
 
 // Obter TODAS as configurações
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authorize('configuracoes', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     let config = await db.collection('config-programacao').findOne({})
@@ -342,7 +346,7 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 // Obter apenas os tipos (endpoint rápido)
-router.get('/tipos', async (req: Request, res: Response) => {
+router.get('/tipos', authorize('configuracoes', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})
@@ -368,7 +372,7 @@ router.get('/tipos', async (req: Request, res: Response) => {
 })
 
 // Obter seção específica
-router.get('/secao/:secao', async (req: Request, res: Response) => {
+router.get('/secao/:secao', authorize('configuracoes', 'read'), async (req: Request, res: Response) => {
   try {
     const { secao } = req.params
     const db = await getDb()
@@ -451,7 +455,7 @@ function sincronizarArrays(data: any, existing: any): any {
 }
 
 // Salvar configurações
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authorize('configuracoes', 'update'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const { _id, ...dataWithoutId } = req.body
@@ -473,7 +477,7 @@ router.post('/', async (req: Request, res: Response) => {
 })
 
 // Atualizar seção
-router.put('/secao/:secao', async (req: Request, res: Response) => {
+router.put('/secao/:secao', authorize('configuracoes', 'update'), async (req: Request, res: Response) => {
   try {
     const { secao } = req.params
     const db = await getDb()
@@ -496,7 +500,7 @@ router.put('/secao/:secao', async (req: Request, res: Response) => {
 })
 
 // Reset
-router.post('/reset', async (req: Request, res: Response) => {
+router.post('/reset', authorize('configuracoes', 'manage'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const defaultConfig = { ...CONFIGURACOES_PADRAO, atualizadoEm: new Date(), atualizadoPor: 'sistema' }
@@ -509,7 +513,7 @@ router.post('/reset', async (req: Request, res: Response) => {
 })
 
 // Microfones
-router.get('/microfones', async (req: Request, res: Response) => {
+router.get('/microfones', authorize('configuracoes', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})
@@ -528,7 +532,7 @@ router.get('/microfones', async (req: Request, res: Response) => {
 })
 
 // Indicadores
-router.get('/indicadores', async (req: Request, res: Response) => {
+router.get('/indicadores', authorize('configuracoes', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})
@@ -547,7 +551,7 @@ router.get('/indicadores', async (req: Request, res: Response) => {
 })
 
 // Grupos limpeza
-router.get('/grupos-limpeza', async (req: Request, res: Response) => {
+router.get('/grupos-limpeza', authorize('configuracoes', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const config = await db.collection('config-programacao').findOne({})

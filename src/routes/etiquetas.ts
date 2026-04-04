@@ -1,11 +1,15 @@
 import { Router, Request, Response } from 'express'
 import { getDb } from '../db.js'
 import { ObjectId } from 'mongodb'
+import { authenticate, authorize, auditAction } from '../middleware/auth.js'
 
 const router = Router()
 
+// Aplicar autenticação em todas as rotas
+router.use(authenticate)
+
 // Listar todas as etiquetas
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authorize('etiquetas', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const etiquetas = await db.collection('etiquetas')
@@ -21,7 +25,7 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 // Criar nova etiqueta
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authorize('etiquetas', 'create'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const data = req.body
@@ -49,7 +53,7 @@ router.post('/', async (req: Request, res: Response) => {
 })
 
 // Atualizar etiqueta
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', authorize('etiquetas', 'update'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()
@@ -69,7 +73,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 })
 
 // Excluir etiqueta
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', authorize('etiquetas', 'delete'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()

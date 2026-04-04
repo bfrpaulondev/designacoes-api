@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
+import { ObjectId } from 'mongodb'
 import { getDb } from '../db.js'
 import { User, Role, Permission, Resource, Action, UserRole } from '../types.js'
 
@@ -80,8 +81,7 @@ function hasPermission(
 
   // Verificar se tem a permissão específica ou a permissão 'manage'
   return allPermissions.some(p => 
-    (p.resource === resource && (p.action === action || p.action === 'manage')) ||
-    p.action === 'manage' // manage em qualquer recurso dá todas as permissões
+    p.resource === resource && (p.action === action || p.action === 'manage')
   )
 }
 
@@ -289,13 +289,13 @@ async function logAudit(
   try {
     const db = await getDb()
     await db.collection('audit_logs').insertOne({
-      id: new Date().getTime().toString(),
+      id: new ObjectId().toString(),
       userId: user._id,
       userName: user.name,
       action,
       resource,
       details,
-      ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
+      ipAddress: req.ip || req.socket.remoteAddress || 'unknown',
       userAgent: req.headers['user-agent'] || 'unknown',
       timestamp: new Date()
     })
@@ -320,14 +320,14 @@ export async function auditAction(
   try {
     const db = await getDb()
     await db.collection('audit_logs').insertOne({
-      id: new Date().getTime().toString(),
+      id: new ObjectId().toString(),
       userId: user._id,
       userName: user.name,
       action,
       resource,
       resourceId,
       details: details || {},
-      ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
+      ipAddress: req.ip || req.socket.remoteAddress || 'unknown',
       userAgent: req.headers['user-agent'] || 'unknown',
       timestamp: new Date()
     })

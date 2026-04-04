@@ -1,10 +1,14 @@
 import { Router, Request, Response } from 'express'
 import { getDb } from '../db.js'
+import { authenticate, authorize } from '../middleware/auth.js'
 
 const router = Router()
 
+// Aplicar autenticação em todas as rotas
+router.use(authenticate)
+
 // Obter configurações
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authorize('configuracoes', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const config = await db.collection('config').findOne({})
@@ -17,7 +21,7 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 // Salvar configurações
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authorize('configuracoes', 'update'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const data = req.body

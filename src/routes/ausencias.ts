@@ -1,11 +1,15 @@
 import { Router, Request, Response } from 'express'
 import { getDb } from '../db.js'
 import { ObjectId } from 'mongodb'
+import { authenticate, authorize, auditAction } from '../middleware/auth.js'
 
 const router = Router()
 
+// Aplicar autenticação em todas as rotas
+router.use(authenticate)
+
 // Listar todas as ausências
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authorize('ausencias', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const ausencias = await db.collection('ausencias')
@@ -21,7 +25,7 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 // Obter ausências por publicador
-router.get('/publicador/:publicadorId', async (req: Request, res: Response) => {
+router.get('/publicador/:publicadorId', authorize('ausencias', 'read'), async (req: Request, res: Response) => {
   try {
     const { publicadorId } = req.params
     const db = await getDb()
@@ -39,7 +43,7 @@ router.get('/publicador/:publicadorId', async (req: Request, res: Response) => {
 })
 
 // Obter uma ausência por ID
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', authorize('ausencias', 'read'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()
@@ -64,7 +68,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 })
 
 // Verificar ausências ativas para uma data
-router.post('/verificar', async (req: Request, res: Response) => {
+router.post('/verificar', authorize('ausencias', 'read'), async (req: Request, res: Response) => {
   try {
     const { data, publicadorId, tipoDesignacao } = req.body
     
@@ -174,7 +178,7 @@ router.post('/verificar', async (req: Request, res: Response) => {
 })
 
 // Criar nova ausência
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authorize('ausencias', 'create'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const data = req.body
@@ -232,20 +236,23 @@ router.post('/', async (req: Request, res: Response) => {
 })
 
 // Atualizar ausência
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', authorize('ausencias', 'update'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()
     const data = req.body
 
+    // Remover campos imutáveis que não devem ser atualizados
+    const { _id, id: bodyId, criadoEm, ...safeData } = data
+
     const updateData: any = {
-      ...data,
+      ...safeData,
       atualizadoEm: new Date()
     }
 
     // Se atualizou o publicador, buscar o nome
-    if (data.publicadorId) {
-      const publicador = await db.collection('publicadores').findOne({ id: data.publicadorId })
+    if (safeData.publicadorId) {
+      const publicador = await db.collection('publicadores').findOne({ id: safeData.publicadorId })
       if (publicador) {
         updateData.publicadorNome = publicador.nome || publicador.nomeCompleto
       }
@@ -269,7 +276,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 })
 
 // Excluir ausência
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', authorize('ausencias', 'delete'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()

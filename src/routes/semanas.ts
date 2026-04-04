@@ -1,11 +1,15 @@
 import { Router, Request, Response } from 'express'
 import { getDb } from '../db.js'
 import { ObjectId } from 'mongodb'
+import { authenticate, authorize, auditAction } from '../middleware/auth.js'
 
 const router = Router()
 
+// Aplicar autenticação em todas as rotas
+router.use(authenticate)
+
 // Listar todas as semanas
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authorize('semanas', 'read'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const semanas = await db.collection('semanas')
@@ -21,7 +25,7 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 // Criar nova semana
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authorize('semanas', 'create'), async (req: Request, res: Response) => {
   try {
     const db = await getDb()
     const data = req.body
@@ -51,7 +55,7 @@ router.post('/', async (req: Request, res: Response) => {
 })
 
 // Atualizar semana
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', authorize('semanas', 'update'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()
@@ -71,7 +75,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 })
 
 // Excluir semana
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', authorize('semanas', 'delete'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const db = await getDb()

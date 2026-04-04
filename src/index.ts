@@ -11,6 +11,7 @@ import designacoesRoutes from './routes/designacoes.js'
 import configProgramacaoRoutes from './routes/config-programacao.js'
 import privilegiosRoutes from './routes/privilegios.js'
 import qualificacoesRoutes from './routes/qualificacoes.js'
+import { closeConnection } from './db.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -61,9 +62,30 @@ app.use('/api/qualificacoes', qualificacoesRoutes)
 // Error handler
 app.use((err: Error, req: Request, res: Response, next: any) => {
   console.error('Error:', err.message)
-  res.status(500).json({ error: err.message })
+  res.status(500).json({ error: process.env.NODE_ENV === 'production' ? 'Erro interno do servidor' : err.message })
 })
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`)
+})
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully...')
+  server.close(() => {
+    closeConnection().then(() => {
+      console.log('Database connection closed')
+      process.exit(0)
+    })
+  })
+})
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, shutting down gracefully...')
+  server.close(() => {
+    closeConnection().then(() => {
+      console.log('Database connection closed')
+      process.exit(0)
+    })
+  })
 })
