@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import { getDb } from '../db.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { ObjectId } from 'mongodb'
 import { User, Role } from '../types.js'
 
 const router = Router()
@@ -122,7 +123,14 @@ router.get('/verify', async (req: Request, res: Response) => {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string }
 
     const db = await getDb()
-    const user = await db.collection<User>('users').findOne({ _id: decoded.id as any })
+    
+    let user
+    if (ObjectId.isValid(decoded.id)) {
+      user = await db.collection<User>('users').findOne({ _id: new ObjectId(decoded.id) })
+    }
+    if (!user) {
+      user = await db.collection<User>('users').findOne({ _id: decoded.id as any })
+    }
 
     if (!user) {
       return res.status(401).json({ error: 'Usuário não encontrado' })
@@ -174,7 +182,14 @@ router.post('/change-password', async (req: Request, res: Response) => {
     }
 
     const db = await getDb()
-    const user = await db.collection<User>('users').findOne({ _id: decoded.id as any })
+    
+    let user
+    if (ObjectId.isValid(decoded.id)) {
+      user = await db.collection<User>('users').findOne({ _id: new ObjectId(decoded.id) })
+    }
+    if (!user) {
+      user = await db.collection<User>('users').findOne({ _id: decoded.id as any })
+    }
 
     if (!user) {
       return res.status(401).json({ error: 'Usuário não encontrado' })
@@ -218,7 +233,14 @@ router.patch('/preferences', async (req: Request, res: Response) => {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string }
 
     const db = await getDb()
-    const user = await db.collection<User>('users').findOne({ _id: decoded.id as any })
+    
+    let user
+    if (ObjectId.isValid(decoded.id)) {
+      user = await db.collection<User>('users').findOne({ _id: new ObjectId(decoded.id) })
+    }
+    if (!user) {
+      user = await db.collection<User>('users').findOne({ _id: decoded.id as any })
+    }
 
     if (!user) {
       return res.status(401).json({ error: 'Usuário não encontrado' })

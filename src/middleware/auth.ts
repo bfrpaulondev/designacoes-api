@@ -30,7 +30,15 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string }
 
     const db = await getDb()
-    const user = await db.collection<User>('users').findOne({ _id: decoded.id as any })
+    
+    // Tentar encontrar por _id como ObjectId ou como string
+    let user
+    if (ObjectId.isValid(decoded.id)) {
+      user = await db.collection<User>('users').findOne({ _id: new ObjectId(decoded.id) })
+    }
+    if (!user) {
+      user = await db.collection<User>('users').findOne({ _id: decoded.id as any })
+    }
 
     if (!user) {
       return res.status(401).json({ error: 'Usuário não encontrado' })
@@ -261,7 +269,14 @@ export async function optionalAuth(req: Request, res: Response, next: NextFuncti
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string }
 
     const db = await getDb()
-    const user = await db.collection<User>('users').findOne({ _id: decoded.id as any })
+    
+    let user
+    if (ObjectId.isValid(decoded.id)) {
+      user = await db.collection<User>('users').findOne({ _id: new ObjectId(decoded.id) })
+    }
+    if (!user) {
+      user = await db.collection<User>('users').findOne({ _id: decoded.id as any })
+    }
 
     if (user && user.isActive) {
       const role = await db.collection<Role>('roles').findOne({ id: user.role })
